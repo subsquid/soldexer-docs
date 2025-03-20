@@ -1,0 +1,625 @@
+openapi: 3.1.0
+info:
+  title: SQD Network Portal API - Dataset Endpoints
+  description: API endpoints for interacting with datasets under the SQD Network Portal, specifically for the solana-beta dataset.
+  version: 1.0.0
+servers:
+  - url: https://portal.sqd.dev/datasets/solana-beta
+paths:
+  /metadata:
+    get:
+      description: Retrieves metadata describing the dataset, including its name, aliases, start block, and real-time status.
+      responses:
+        '200':
+          description: Dataset metadata response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetMetadata'
+  /state:
+    get:
+      description: Provides a summary of stored block ranges for the dataset, useful for displaying network status.
+      responses:
+        '200':
+          description: Dataset state response with block ranges
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetState'
+  /stream:
+    post:
+      description: Streams a list of blocks matching the provided data query, potentially including real-time data.
+      requestBody:
+        description: Data query to filter and retrieve blocks
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataQuery'
+      responses:
+        '200':
+          description: A stream of blocks in gzipped JSON lines format
+          headers:
+            X-Sqd-Finalized-Head-Number:
+              schema:
+                type: integer
+                format: int64
+              description: Number of the latest finalized block
+            X-Sqd-Finalized-Head-Hash:
+              schema:
+                type: string
+              description: Hash of the latest finalized block
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Block'
+        '204':
+          description: No content available above the latest block; waits up to 5 seconds if real-time is enabled
+          headers:
+            X-Sqd-Finalized-Head-Number:
+              schema:
+                type: integer
+                format: int64
+              description: Number of the latest finalized block
+            X-Sqd-Finalized-Head-Hash:
+              schema:
+                type: string
+              description: Hash of the latest finalized block
+        '400':
+          description: Bad request due to invalid query or encoding
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Dataset not found
+        '409':
+          description: Conflict due to mismatched parent block hash
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictResponse'
+        '429':
+          description: Too many requests; rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying
+        '500':
+          description: Internal server error
+        '503':
+          description: Service unavailable; retry later
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying
+  /finalized-stream:
+    post:
+      description: Streams only finalized blocks matching the provided data query.
+      requestBody:
+        description: Data query to filter and retrieve finalized blocks
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataQuery'
+      responses:
+        '200':
+          description: A stream of finalized blocks in gzipped JSON lines format
+          headers:
+            X-Sqd-Finalized-Head-Number:
+              schema:
+                type: integer
+                format: int64
+              description: Number of the latest finalized block
+            X-Sqd-Finalized-Head-Hash:
+              schema:
+                type: string
+              description: Hash of the latest finalized block
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Block'
+        '204':
+          description: No finalized content available above the latest block
+          headers:
+            X-Sqd-Finalized-Head-Number:
+              schema:
+                type: integer
+                format: int64
+              description: Number of the latest finalized block
+            X-Sqd-Finalized-Head-Hash:
+              schema:
+                type: string
+              description: Hash of the latest finalized block
+        '400':
+          description: Bad request due to invalid query or encoding
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Dataset not found
+        '409':
+          description: Conflict due to mismatched parent block hash
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictResponse'
+        '429':
+          description: Too many requests; rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying
+        '500':
+          description: Internal server error
+        '503':
+          description: Service unavailable; retry later
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying
+  /head:
+    get:
+      description: Returns the number and hash of the highest block available in the dataset.
+      responses:
+        '200':
+          description: Highest block information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlockHead'
+  /finalized-head:
+    get:
+      description: Returns the number and hash of the highest finalized block available in the dataset.
+      responses:
+        '200':
+          description: Highest finalized block information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlockHead'
+components:
+  schemas:
+    DatasetMetadata:
+      type: object
+      properties:
+        dataset:
+          type: string
+          description: The default name used to reference this dataset
+        aliases:
+          type: array
+          items:
+            type: string
+          description: Alternative names for the dataset
+        real_time:
+          type: boolean
+          description: Indicates if the dataset has real-time data
+        start_block:
+          type: integer
+          format: int64
+          description: The block number of the first known block
+      required:
+        - dataset
+        - aliases
+        - real_time
+    DatasetState:
+      type: object
+      properties:
+        worker_ranges:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              ranges:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    begin:
+                      type: integer
+                      format: int64
+                    end:
+                      type: integer
+                      format: int64
+                  required:
+                    - begin
+                    - end
+        highest_seen_block:
+          type: integer
+          format: int64
+        first_gap:
+          type: integer
+          format: int64
+      required:
+        - worker_ranges
+        - highest_seen_block
+    DataQuery:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: ["solana"]
+          default: "solana"
+        fromBlock:
+          type: integer
+          format: int64
+          description: The number of the first block to fetch
+        toBlock:
+          type: integer
+          format: int64
+          description: The number of the last block to fetch (inclusive)
+        parentBlockHash:
+          type: string
+          description: Expected hash of the parent of the first requested block
+        includeAllBlocks:
+          type: boolean
+          description: If true, includes blocks with no matching data
+        fields:
+          type: object
+          properties:
+            instruction:
+              type: object
+              properties:
+                programId:
+                  type: boolean
+                accounts:
+                  type: boolean
+                data:
+                  type: boolean
+                isCommitted:
+                  type: boolean
+                computeUnitsConsumed:
+                  type: boolean
+                error:
+                  type: boolean
+                hasDroppedLogMessages:
+                  type: boolean
+            transaction:
+              type: object
+              properties:
+                signatures:
+                  type: boolean
+                err:
+                  type: boolean
+                version:
+                  type: boolean
+                accountKeys:
+                  type: boolean
+                addressTableLookups:
+                  type: boolean
+                numReadonlySignedAccounts:
+                  type: boolean
+                numReadonlyUnsignedAccounts:
+                  type: boolean
+                numRequiredSignatures:
+                  type: boolean
+                recentBlockhash:
+                  type: boolean
+                computeUnitsConsumed:
+                  type: boolean
+                fee:
+                  type: boolean
+                loadedAddresses:
+                  type: boolean
+                hasDroppedLogMessages:
+                  type: boolean
+            log:
+              type: object
+              properties:
+                programId:
+                  type: boolean
+                kind:
+                  type: boolean
+                message:
+                  type: boolean
+            balance:
+              type: object
+              properties:
+                pre:
+                  type: boolean
+                post:
+                  type: boolean
+            tokenBalance:
+              type: object
+              properties:
+                preMint:
+                  type: boolean
+                preDecimals:
+                  type: boolean
+                preOwner:
+                  type: boolean
+                preAmount:
+                  type: boolean
+                postMint:
+                  type: boolean
+                postDecimals:
+                  type: boolean
+                postOwner:
+                  type: boolean
+                postAmount:
+                  type: boolean
+                postProgramId:
+                  type: boolean
+                preProgramId:
+                  type: boolean
+            reward:
+              type: object
+              properties:
+                lamports:
+                  type: boolean
+                rewardType:
+                  type: boolean
+                postBalance:
+                  type: boolean
+                commission:
+                  type: boolean
+            block:
+              type: object
+              properties:
+                slot:
+                  type: boolean
+                parentSlot:
+                  type: boolean
+                timestamp:
+                  type: boolean
+        instructions:
+          type: array
+          items:
+            type: object
+            properties:
+              programId:
+                type: array
+                items:
+                  type: string
+              d1:
+                type: array
+                items:
+                  type: string
+              d2:
+                type: array
+                items:
+                  type: string
+              d3:
+                type: array
+                items:
+                  type: string
+              d4:
+                type: array
+                items:
+                  type: string
+              d8:
+                type: array
+                items:
+                  type: string
+              a0:
+                type: array
+                items:
+                  type: string
+              a1:
+                type: array
+                items:
+                  type: string
+              a2:
+                type: array
+                items:
+                  type: string
+              a3:
+                type: array
+                items:
+                  type: string
+              a4:
+                type: array
+                items:
+                  type: string
+              a5:
+                type: array
+                items:
+                  type: string
+              a6:
+                type: array
+                items:
+                  type: string
+              a7:
+                type: array
+                items:
+                  type: string
+              a8:
+                type: array
+                items:
+                  type: string
+              a9:
+                type: array
+                items:
+                  type: string
+              isCommitted:
+                type: boolean
+              transaction:
+                type: boolean
+              transactionTokenBalances:
+                type: boolean
+              logs:
+                type: boolean
+              innerInstructions:
+                type: boolean
+        transactions:
+          type: array
+          items:
+            type: object
+            properties:
+              feePayer:
+                type: array
+                items:
+                  type: string
+              instructions:
+                type: boolean
+              logs:
+                type: boolean
+        logs:
+          type: array
+          items:
+            type: object
+            properties:
+              programId:
+                type: array
+                items:
+                  type: string
+              kind:
+                type: array
+                items:
+                  type: string
+                  enum: ['log', 'data', 'other']
+              transaction:
+                type: boolean
+              instruction:
+                type: boolean
+        balances:
+          type: array
+          items:
+            type: object
+            properties:
+              account:
+                type: array
+                items:
+                  type: string
+              transaction:
+                type: boolean
+              transactionInstructions:
+                type: boolean
+        tokenBalances:
+          type: array
+          items:
+            type: object
+            properties:
+              account:
+                type: array
+                items:
+                  type: string
+              preProgramId:
+                type: array
+                items:
+                  type: string
+              postProgramId:
+                type: array
+                items:
+                  type: string
+              preMint:
+                type: array
+                items:
+                  type: string
+              postMint:
+                type: array
+                items:
+                  type: string
+              preOwner:
+                type: array
+                items:
+                  type: string
+              postOwner:
+                type: array
+                items:
+                  type: string
+              transaction:
+                type: boolean
+              transactionInstructions:
+                type: boolean
+        rewards:
+          type: array
+          items:
+            type: object
+            properties:
+              pubkey:
+                type: array
+                items:
+                  type: string
+      required:
+        - fromBlock
+    Block:
+      type: object
+      properties:
+        header:
+          type: object
+          properties:
+            number:
+              type: integer
+              format: int64
+            hash:
+              type: string
+          required:
+            - number
+            - hash
+        instructions:
+          type: array
+          items:
+            type: object
+            properties:
+              transactionIndex:
+                type: integer
+              instructionAddress:
+                type: array
+                items:
+                  type: integer
+              programId:
+                type: string
+              accounts:
+                type: array
+                items:
+                  type: string
+              data:
+                type: string
+              isCommitted:
+                type: boolean
+              computeUnitsConsumed:
+                type: integer
+                format: int64
+              error:
+                type: string
+              hasDroppedLogMessages:
+                type: boolean
+    BlockHead:
+      type: object
+      properties:
+        number:
+          type: integer
+          format: int64
+        hash:
+          type: string
+      nullable: true
+    ConflictResponse:
+      type: object
+      properties:
+        previousBlocks:
+          type: array
+          items:
+            type: object
+            properties:
+              number:
+                type: integer
+                format: int64
+              hash:
+                type: string
+            required:
+              - number
+              - hash
+      required:
+        - previousBlocks
+    Error:
+      type: object
+      properties:
+        error:
+          type: integer
+          format: int32
+        message:
+          type: string
+      required:
+        - error
+        - message

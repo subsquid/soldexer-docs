@@ -46,14 +46,12 @@
           {
             "group": "Endpoint Examples",
             "pages": [
-              "api-reference/endpoint/get-portal-status",
-              "api-reference/endpoint/list-datasets",
-              "api-reference/endpoint/get-dataset-metadata",
-              "api-reference/endpoint/get-dataset-state",
-              "api-reference/endpoint/stream-blocks",
-              "api-reference/endpoint/stream-finalized-blocks",
-              "api-reference/endpoint/get-dataset-head",
-              "api-reference/endpoint/get-dataset-finalized-head"
+              "api-reference/endpoint/get-metadata",
+              "api-reference/endpoint/get-state",
+              "api-reference/endpoint/post-stream",
+              "api-reference/endpoint/post-finalized-stream",
+              "api-reference/endpoint/get-head",
+              "api-reference/endpoint/get-finalized-head"
             ]
           }
         ]
