@@ -46,10 +46,14 @@
           {
             "group": "Endpoint Examples",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/endpoint/get-portal-status",
+              "api-reference/endpoint/list-datasets",
+              "api-reference/endpoint/get-dataset-metadata",
+              "api-reference/endpoint/get-dataset-state",
+              "api-reference/endpoint/stream-blocks",
+              "api-reference/endpoint/stream-finalized-blocks",
+              "api-reference/endpoint/get-dataset-head",
+              "api-reference/endpoint/get-dataset-finalized-head"
             ]
           }
         ]

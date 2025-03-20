@@ -1,72 +1,137 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "OpenAPI Plant Store",
-    "description": "A sample API that uses a plant store as an example to demonstrate features in the OpenAPI specification",
-    "license": {
-      "name": "MIT"
-    },
-    "version": "1.0.0"
+    "title": "Portal API",
+    "description": "An API for interacting with blockchain datasets and portal status information.",
+    "version": "0.5.5"
   },
   "servers": [
     {
-      "url": "http://sandbox.mintlify.com"
-    }
-  ],
-  "security": [
-    {
-      "bearerAuth": []
+      "url": "http://portal.example.com"
     }
   ],
   "paths": {
-    "/plants": {
+    "/status": {
       "get": {
-        "description": "Returns all plants from the system that the user has access to",
-        "parameters": [
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "The maximum number of results to return",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
+        "description": "Retrieves human-readable information about the portal's state.",
         "responses": {
           "200": {
-            "description": "Plant response",
+            "description": "Portal status response",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Plant"
-                  }
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Unexpected error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Error"
+                  "$ref": "#/components/schemas/PortalStatus"
                 }
               }
             }
           }
         }
-      },
+      }
+    },
+    "/datasets": {
+      "get": {
+        "description": "Lists all available datasets.",
+        "responses": {
+          "200": {
+            "description": "List of datasets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Dataset"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/datasets/{dataset}/metadata": {
+      "get": {
+        "description": "Retrieves metadata for a specific dataset.",
+        "parameters": [
+          {
+            "name": "dataset",
+            "in": "path",
+            "description": "The name or alias of the dataset",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dataset metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DatasetMetadata"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dataset not found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/datasets/{dataset}/state": {
+      "get": {
+        "description": "Provides a summary of stored block ranges for the dataset.",
+        "parameters": [
+          {
+            "name": "dataset",
+            "in": "path",
+            "description": "The name or alias of the dataset",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Block range summary (TBD)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dataset not found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/datasets/{dataset}/stream": {
       "post": {
-        "description": "Creates a new plant in the store",
+        "description": "Streams blocks matching a data query for the specified dataset.",
+        "parameters": [
+          {
+            "name": "dataset",
+            "in": "path",
+            "description": "The name or alias of the dataset",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
-          "description": "Plant to add to the store",
+          "description": "Data query to filter blocks",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/NewPlant"
+                "$ref": "#/components/schemas/DataQuery"
               }
             }
           },
@@ -74,17 +139,52 @@
         },
         "responses": {
           "200": {
-            "description": "plant response",
+            "description": "Stream of blocks in JSON Lines format (optionally gzipped)",
+            "headers": {
+              "X-Sqd-Finalized-Head-Number": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Number of the latest finalized block"
+              },
+              "X-Sqd-Finalized-Head-Hash": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Hash of the latest finalized block"
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/Plant"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Block"
+                  }
                 }
               }
             }
           },
+          "204": {
+            "description": "No blocks available above the latest block",
+            "headers": {
+              "X-Sqd-Finalized-Head-Number": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Number of the latest finalized block"
+              },
+              "X-Sqd-Finalized-Head-Hash": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Hash of the latest finalized block"
+              }
+            },
+            "content": {}
+          },
           "400": {
-            "description": "unexpected error",
+            "description": "Invalid query or request format",
             "content": {
               "application/json": {
                 "schema": {
@@ -92,32 +192,97 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Dataset not found",
+            "content": {}
+          },
+          "409": {
+            "description": "Parent block hash mismatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConflictResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit exceeded",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Seconds to wait before retrying"
+              }
+            },
+            "content": {}
+          },
+          "503": {
+            "description": "Service temporarily unavailable",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "integer"
+                },
+                "description": "Seconds to wait before retrying"
+              }
+            },
+            "content": {}
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {}
           }
         }
       }
     },
-    "/plants/{id}": {
-      "delete": {
-        "description": "Deletes a single plant based on the ID supplied",
+    "/datasets/{dataset}/finalized-stream": {
+      "post": {
+        "description": "Streams finalized blocks matching a data query for the specified dataset.",
         "parameters": [
           {
-            "name": "id",
+            "name": "dataset",
             "in": "path",
-            "description": "ID of plant to delete",
+            "description": "The name or alias of the dataset",
             "required": true,
             "schema": {
-              "type": "integer",
-              "format": "int64"
+              "type": "string"
             }
           }
         ],
+        "requestBody": {
+          "description": "Data query to filter finalized blocks",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataQuery"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
+          "200": {
+            "description": "Stream of finalized blocks in JSON Lines format (optionally gzipped)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Block"
+                  }
+                }
+              }
+            }
+          },
           "204": {
-            "description": "Plant deleted",
+            "description": "No finalized blocks available",
             "content": {}
           },
           "400": {
-            "description": "unexpected error",
+            "description": "Invalid query or request format",
             "content": {
               "application/json": {
                 "schema": {
@@ -125,28 +290,74 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "Dataset not found",
+            "content": {}
           }
         }
       }
-    }
-  },
-  "webhooks": {
-    "/plant/webhook": {
-      "post": {
-        "description": "Information about a new plant added to the store",
-        "requestBody": {
-          "description": "Plant added to the store",
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/NewPlant"
-              }
+    },
+    "/datasets/{dataset}/head": {
+      "get": {
+        "description": "Retrieves the highest block available in the dataset.",
+        "parameters": [
+          {
+            "name": "dataset",
+            "in": "path",
+            "description": "The name or alias of the dataset",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
-        },
+        ],
         "responses": {
           "200": {
-            "description": "Return a 200 status to indicate that the data was received successfully"
+            "description": "Highest block information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlockReference"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dataset not found",
+            "content": {}
+          }
+        }
+      }
+    },
+    "/datasets/{dataset}/finalized-head": {
+      "get": {
+        "description": "Retrieves the highest finalized block available in the dataset.",
+        "parameters": [
+          {
+            "name": "dataset",
+            "in": "path",
+            "description": "The name or alias of the dataset",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Highest finalized block information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlockReference"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Dataset not found",
+            "content": {}
           }
         }
       }
@@ -154,63 +365,204 @@
   },
   "components": {
     "schemas": {
-      "Plant": {
-        "required": [
-          "name"
-        ],
+      "PortalStatus": {
         "type": "object",
         "properties": {
-          "name": {
-            "description": "The name of the plant",
-            "type": "string"
+          "peer_id": {
+            "type": "string",
+            "description": "Unique identifier of the peer"
           },
-          "tag": {
-            "description": "Tag to specify the type",
-            "type": "string"
-          }
-        }
-      },
-      "NewPlant": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/Plant"
+          "status": {
+            "type": "string",
+            "description": "Current status of the portal"
           },
-          {
-            "required": [
-              "id"
-            ],
+          "operator": {
+            "type": "string",
+            "description": "Operator address"
+          },
+          "current_epoch": {
             "type": "object",
             "properties": {
-              "id": {
-                "description": "Identification number of the plant",
+              "number": {
                 "type": "integer",
-                "format": "int64"
+                "description": "Epoch number"
+              },
+              "started_at": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Start time of the epoch"
+              },
+              "ended_at": {
+                "type": "string",
+                "format": "date-time",
+                "description": "End time of the epoch"
+              },
+              "duration_seconds": {
+                "type": "integer",
+                "description": "Duration of the epoch in seconds"
               }
             }
-          }
-        ]
-      },
-      "Error": {
-        "required": [
-          "error",
-          "message"
-        ],
-        "type": "object",
-        "properties": {
-          "error": {
-            "type": "integer",
-            "format": "int32"
           },
-          "message": {
-            "type": "string"
+          "sqd_locked": {
+            "type": "string",
+            "description": "Amount of SQD locked"
+          },
+          "cu_per_epoch": {
+            "type": "string",
+            "description": "Compute units per epoch"
+          },
+          "workers": {
+            "type": "object",
+            "properties": {
+              "active_count": {
+                "type": "integer",
+                "description": "Number of active workers"
+              },
+              "rate_limit_per_worker": {
+                "type": "string",
+                "description": "Rate limit per worker"
+              }
+            }
+          },
+          "portal_version": {
+            "type": "string",
+            "description": "Version of the portal"
           }
         }
-      }
-    },
-    "securitySchemes": {
-      "bearerAuth": {
-        "type": "http",
-        "scheme": "bearer"
+      },
+      "Dataset": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "string",
+            "description": "Default name of the dataset"
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Alternative names for the dataset"
+          },
+          "real_time": {
+            "type": "boolean",
+            "description": "Indicates if real-time data is available"
+          },
+          "start_block": {
+            "type": "integer",
+            "description": "First known block number in the dataset"
+          }
+        },
+        "required": ["dataset", "aliases", "real_time"]
+      },
+      "DatasetMetadata": {
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "string",
+            "description": "Default name of the dataset"
+          },
+          "aliases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Alternative names for the dataset"
+          },
+          "real_time": {
+            "type": "boolean",
+            "description": "Indicates if real-time data is available"
+          },
+          "start_block": {
+            "type": "integer",
+            "description": "First known block number in the dataset"
+          }
+        },
+        "required": ["dataset", "aliases", "real_time", "start_block"]
+      },
+      "DataQuery": {
+        "type": "object",
+        "properties": {
+          "fromBlock": {
+            "type": "integer",
+            "description": "First block number to fetch"
+          },
+          "toBlock": {
+            "type": "integer",
+            "description": "Last block number to fetch (inclusive)"
+          },
+          "parentBlockHash": {
+            "type": "string",
+            "description": "Expected hash of the parent of the first requested block"
+          }
+        },
+        "required": ["fromBlock"]
+      },
+      "Block": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "description": "Block number"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Block hash"
+          },
+          "parent_hash": {
+            "type": "string",
+            "description": "Hash of the parent block"
+          }
+        },
+        "required": ["number", "hash"]
+      },
+      "BlockReference": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "integer",
+            "description": "Block number"
+          },
+          "hash": {
+            "type": "string",
+            "description": "Block hash"
+          }
+        },
+        "nullable": true
+      },
+      "ConflictResponse": {
+        "type": "object",
+        "properties": {
+          "previousBlocks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "type": "integer",
+                  "description": "Block number"
+                },
+                "hash": {
+                  "type": "string",
+                  "description": "Block hash"
+                }
+              },
+              "required": ["number", "hash"]
+            },
+            "description": "List of previous blocks in the current chain"
+          }
+        },
+        "required": ["previousBlocks"]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "Error message"
+          }
+        },
+        "required": ["message"]
       }
     }
   }
