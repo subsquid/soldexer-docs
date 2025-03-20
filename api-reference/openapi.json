@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "http://portal.example.com"
+      "url": "https://portal.sqd.dev/"
     }
   ],
   "paths": {
