@@ -1,0 +1,338 @@
+---
+title: "Advanced Configurations"
+description: "Explore advanced configuration options to customize the product for your specific needs"
+---
+
+## Configuration Overview
+
+Our product offers extensive configuration options that allow you to tailor its behavior to your specific requirements. This page covers advanced configuration techniques beyond the basics.
+
+## Environment-Specific Configurations
+
+Different environments often require different configurations. Here's how to manage them effectively:
+
+```typescript
+// Configuration factory based on environment
+function createConfig(environment) {
+  const baseConfig = {
+    timeout: 30000,
+    retries: 3,
+    logging: true
+  };
+  
+  switch (environment) {
+    case 'development':
+      return {
+        ...baseConfig,
+        endpoint: 'https://dev-api.example.com',
+        logging: {
+          level: 'debug',
+          destination: 'console'
+        },
+        caching: {
+          enabled: true,
+          ttl: 60 // Short TTL for development
+        }
+      };
+      
+    case 'staging':
+      return {
+        ...baseConfig,
+        endpoint: 'https://staging-api.example.com',
+        logging: {
+          level: 'info',
+          destination: 'file',
+          filename: 'staging-logs.txt'
+        },
+        caching: {
+          enabled: true,
+          ttl: 300 // 5 minutes
+        }
+      };
+      
+    case 'production':
+      return {
+        ...baseConfig,
+        endpoint: 'https://api.example.com',
+        timeout: 60000, // Longer timeout for production
+        retries: 5,     // More retries in production
+        logging: {
+          level: 'warn',
+          destination: 'service',
+          service: 'cloudwatch'
+        },
+        caching: {
+          enabled: true,
+          ttl: 3600 // 1 hour
+        }
+      };
+      
+    default:
+      throw new Error(`Unknown environment: ${environment}`);
+  }
+}
+
+// Usage
+const config = createConfig(process.env.NODE_ENV);
+const client = new Client({
+  apiKey: process.env.API_KEY,
+  ...config
+});
+```
+
+## Feature Flags and Progressive Rollouts
+
+Implement feature flags for controlled feature rollouts:
+
+```typescript
+// Feature flag configuration
+const featureFlags = {
+  newAlgorithm: {
+    enabled: true,
+    rolloutPercentage: 25, // Enable for 25% of operations
+    whitelist: ['user123', 'user456'] // Always enable for these users
+  },
+  betaFeature: {
+    enabled: process.env.ENABLE_BETA_FEATURES === 'true',
+    rolloutPercentage: 0 // Disabled by default
+  },
+  improvedCaching: {
+    enabled: true,
+    rolloutPercentage: 100 // Fully rolled out
+  }
+};
+
+// Feature flag evaluation function
+function isFeatureEnabled(featureName, context = {}) {
+  const flag = featureFlags[featureName];
+  
+  if (!flag || !flag.enabled) {
+    return false;
+  }
+  
+  // Check whitelist
+  if (context.userId && flag.whitelist && flag.whitelist.includes(context.userId)) {
+    return true;
+  }
+  
+  // Check rollout percentage
+  if (flag.rolloutPercentage < 100) {
+    // Generate a consistent hash based on context
+    const hash = generateConsistentHash(context);
+    return hash % 100 < flag.rolloutPercentage;
+  }
+  
+  return true;
+}
+
+// Usage with client
+client.process({
+  data: inputData,
+  options: {
+    useNewAlgorithm: isFeatureEnabled('newAlgorithm', { 
+      userId: currentUser.id,
+      operationId: operationId
+    })
+  }
+});
+```
+
+## Advanced Retry Strategies
+
+Customize retry behavior for different types of operations:
+
+```typescript
+// Custom retry strategy
+const retryStrategy = {
+  maxRetries: 5,
+  
+  // Determine if an error is retryable
+  isRetryable: (error) => {
+    const retryableCodes = [
+      'NETWORK_ERROR',
+      'TIMEOUT',
+      'RATE_LIMIT',
+      'SERVER_ERROR'
+    ];
+    
+    return retryableCodes.includes(error.code);
+  },
+  
+  // Calculate delay before next retry (exponential backoff with jitter)
+  getDelayMs: (attempt, error) => {
+    // Base delay: 100ms, 200ms, 400ms, 800ms, 1600ms
+    const baseDelay = Math.pow(2, attempt) * 100;
+    
+    // Add jitter (±30% of base delay)
+    const jitter = baseDelay * 0.3 * (Math.random() * 2 - 1);
+    
+    // For rate limiting, use the Retry-After header if available
+    if (error.code === 'RATE_LIMIT' && error.retryAfter) {
+      return error.retryAfter * 1000;
+    }
+    
+    return Math.min(baseDelay + jitter, 30000); // Cap at 30 seconds
+  }
+};
+
+// Configure client with custom retry strategy
+const client = new Client({
+  apiKey: process.env.API_KEY,
+  retry: retryStrategy
+});
+```
+
+## Circuit Breaker Pattern
+
+Implement a circuit breaker to prevent cascading failures:
+
+```typescript
+class CircuitBreaker {
+  constructor(options = {}) {
+    this.failureThreshold = options.failureThreshold || 5;
+    this.resetTimeout = options.resetTimeout || 30000;
+    this.monitorInterval = options.monitorInterval || 5000;
+    
+    this.state = 'CLOSED'; // CLOSED, OPEN, HALF_OPEN
+    this.failures = 0;
+    this.lastFailureTime = null;
+    this.monitors = new Set();
+  }
+  
+  async execute(operation) {
+    if (this.state === 'OPEN') {
+      // Check if it's time to try again
+      const now = Date.now();
+      if (now - this.lastFailureTime >= this.resetTimeout) {
+        this.state = 'HALF_OPEN';
+      } else {
+        throw new Error('Circuit is open');
+      }
+    }
+    
+    try {
+      const result = await operation();
+      
+      if (this.state === 'HALF_OPEN') {
+        // Success in half-open state means we can close the circuit
+        this.reset();
+      }
+      
+      return result;
+    } catch (error) {
+      this.recordFailure();
+      throw error;
+    }
+  }
+  
+  recordFailure() {
+    this.failures++;
+    this.lastFailureTime = Date.now();
+    
+    if (this.state === 'CLOSED' && this.failures >= this.failureThreshold) {
+      this.state = 'OPEN';
+      this.notifyMonitors();
+    } else if (this.state === 'HALF_OPEN') {
+      this.state = 'OPEN';
+    }
+  }
+  
+  reset() {
+    this.failures = 0;
+    this.state = 'CLOSED';
+    this.notifyMonitors();
+  }
+  
+  addMonitor(callback) {
+    this.monitors.add(callback);
+    return () => this.monitors.delete(callback);
+  }
+  
+  notifyMonitors() {
+    for (const callback of this.monitors) {
+      try {
+        callback({
+          state: this.state,
+          failures: this.failures,
+          lastFailureTime: this.lastFailureTime
+        });
+      } catch (e) {
+        console.error('Error in circuit breaker monitor:', e);
+      }
+    }
+  }
+}
+
+// Usage with client
+const circuitBreaker = new CircuitBreaker({
+  failureThreshold: 3,
+  resetTimeout: 10000
+});
+
+circuitBreaker.addMonitor(status => {
+  console.log(`Circuit breaker state changed to ${status.state}`);
+  if (status.state === 'OPEN') {
+    sendAlert('API circuit breaker tripped');
+  }
+});
+
+async function processWithProtection(data) {
+  try {
+    return await circuitBreaker.execute(() => client.process(data));
+  } catch (error) {
+    if (error.message === 'Circuit is open') {
+      return fallbackProcessing(data);
+    }
+    throw error;
+  }
+}
+```
+
+## Configuration Validation
+
+Validate configurations to catch issues early:
+
+```typescript
+// Configuration schema using a validation library
+const configSchema = {
+  type: 'object',
+  required: ['apiKey', 'endpoint'],
+  properties: {
+    apiKey: { type: 'string', minLength: 32 },
+    endpoint: { type: 'string', format: 'uri' },
+    timeout: { type: 'number', minimum: 1000, maximum: 60000 },
+    retries: { type: 'number', minimum: 0, maximum: 10 },
+    logging: {
+      oneOf: [
+        { type: 'boolean' },
+        {
+          type: 'object',
+          properties: {
+            level: { enum: ['debug', 'info', 'warn', 'error'] },
+            destination: { enum: ['console', 'file', 'service'] }
+          }
+        }
+      ]
+    }
+  }
+};
+
+// Validate configuration before creating client
+function createValidatedClient(config) {
+  const validationResult = validateAgainstSchema(config, configSchema);
+  
+  if (!validationResult.valid) {
+    throw new Error(`Invalid configuration: ${validationResult.errors.join(', ')}`);
+  }
+  
+  return new Client(config);
+}
+```
+
+## Next Steps
+
+Now that you understand advanced configurations:
+
+- Continue to [Page 4](/learn-more/page-4) to learn about enterprise features
+- Implement these configuration patterns in your application
+- Check our [API Reference](/api-reference/introduction) for all available configuration options

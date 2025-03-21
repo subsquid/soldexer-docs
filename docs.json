@@ -1,13 +1,16 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Soldexer.dev",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#0093ff",
+    "light": "#0093ff",
+    "dark": "#000000"
   },
   "favicon": "/favicon.svg",
+  "banner": {
+    "content": "🚀 Soldexer is in Open Beta! [Learn more](/get-started/introduction)"
+  },
   "navigation": {
     "tabs": [
       {
@@ -16,20 +19,33 @@
           {
             "group": "Get Started",
             "pages": [
-              "introduction",
-              "quickstart",
-              "development"
+              "get-started/introduction",
+              "get-started/quickstart",
+              "get-started/faq"
             ]
           },
           {
-            "group": "Essentials",
+            "group": "Examples",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
+              "examples/example-1",
+              "examples/example-2",
+              "examples/example-3"
+            ]
+          },
+          {
+            "group": "Learn More",
+            "pages": [
+              "learn-more/page-1",
+              "learn-more/page-2",
+              "learn-more/page-3",
+              "learn-more/page-4"
+            ]
+          },
+          {
+            "group": "Troubleshooting",
+            "pages": [
+              "troubleshooting/common-issues",
+              "troubleshooting/troubleshooting-guide"
             ]
           }
         ]
@@ -55,24 +71,30 @@
             ]
           }
         ]
+      },
+      {
+        "tab": "Changelog",
+        "groups": [
+          {
+            "group": "Updates",
+            "pages": [
+              "changelog/latest"
+            ]
+          }
+        ]
       }
     ],
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Website",
+          "href": "https://soldexer.dev",
+          "icon": "globe"
         },
         {
           "anchor": "Community",
-          "href": "https://mintlify.com/community",
+          "href": "https://t.me/+Rx3p5SS0PMtmNzQy",
           "icon": "slack"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
         }
       ]
     }
@@ -85,20 +107,59 @@
     "links": [
       {
         "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "href": "https://t.me/+Rx3p5SS0PMtmNzQy"
+      },
+      {
+        "label": "Powered by SQD Network",
+        "href": "https://www.sqd.ai/network"
       }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
+    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+      "x": "https://x.com/helloSQD",
+      "github": "https://github.com/subsquid/squid-sdk"
+    },
+    "links": [
+      {
+        "header": "Resources",
+        "items": [
+          {
+            "label": "SQD Docs",
+            "href": "https://docs.sqd.ai"
+          },
+          {
+            "label": "API Reference",
+            "href": "https://docs.soldexer.dev/api-reference/introduction"
+          }
+        ]
+      },
+      {
+        "header": "Company",
+        "items": [
+          {
+            "label": "About Us",
+            "href": "https://sqd.ai/about"
+          },
+          {
+            "label": "Blog",
+            "href": "https://sqd.dev/blog"
+          }
+        ]
+      },
+      {
+        "header": "Legal",
+        "items": [
+          {
+            "label": "Privacy Policy",
+            "href": "https://soldexer.dev/privacy"
+          },
+          {
+            "label": "Terms of Service",
+            "href": "https://soldexer.dev/terms"
+          }
+        ]
+      }
+    ]
   }
 }

@@ -1,0 +1,94 @@
+---
+title: "Advanced Concepts"
+description: "Dive deeper into the advanced concepts and features of our product"
+---
+
+## Understanding the Architecture
+
+Our product is built on a modern, scalable architecture designed to handle high-volume workloads while maintaining performance and reliability. This page explains the core architectural components and how they work together.
+
+### System Components
+
+<Frame>
+  <img src="/images/architecture-diagram.png" alt="Architecture Diagram" />
+</Frame>
+
+The system consists of several key components:
+
+1. **Client SDK** - The interface that your application uses to communicate with our services
+2. **API Gateway** - Handles authentication, rate limiting, and request routing
+3. **Processing Engine** - The core component that processes your data
+4. **Storage Layer** - Manages persistent data storage and retrieval
+5. **Event System** - Coordinates asynchronous operations and notifications
+
+### Data Flow
+
+When you submit a request through our SDK:
+
+1. The SDK prepares and validates your request
+2. The request is sent to the API Gateway, which authenticates it
+3. The Processing Engine receives the request and performs the required operations
+4. Results are stored in the Storage Layer
+5. The Event System triggers any configured notifications or webhooks
+6. The response is returned to your application
+
+## Performance Considerations
+
+Understanding performance characteristics is crucial for building efficient applications with our product.
+
+### Throughput and Latency
+
+Our system is designed to handle:
+
+- Up to 1,000 requests per second per account
+- Average latency of 100-200ms for standard operations
+- Up to 10GB of data processing per hour
+
+To optimize performance:
+
+- Batch related operations when possible
+- Use compression for large data transfers
+- Implement caching for frequently accessed data
+- Schedule bulk operations during off-peak hours
+
+### Scaling Strategies
+
+As your usage grows, consider these scaling strategies:
+
+1. **Horizontal Scaling** - Distribute workloads across multiple instances
+2. **Workload Partitioning** - Divide processing by data type or priority
+3. **Asynchronous Processing** - Use background jobs for non-time-critical operations
+4. **Resource Allocation** - Adjust resource limits based on workload patterns
+
+## Security Best Practices
+
+Security is a shared responsibility. While we secure our infrastructure, you should follow these best practices:
+
+### API Key Management
+
+- Store API keys securely, never in client-side code
+- Use environment variables or a secure vault service
+- Implement key rotation policies
+- Create separate keys for different environments (dev, staging, production)
+
+### Data Protection
+
+- Encrypt sensitive data before sending it to our API
+- Implement proper access controls in your application
+- Use TLS for all communications
+- Regularly audit data access patterns
+
+### Authentication and Authorization
+
+- Implement the principle of least privilege
+- Use OAuth 2.0 for user authentication when available
+- Validate all user inputs
+- Implement rate limiting on your authentication endpoints
+
+## Next Steps
+
+Now that you understand the advanced concepts:
+
+- Continue to [Page 2](/learn-more/page-2) to learn about optimization techniques
+- Explore our [API Reference](/api-reference/introduction) for detailed endpoint information
+- Check out [Example 2](/examples/example-2) for advanced usage patterns

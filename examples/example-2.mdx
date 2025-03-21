@@ -1,0 +1,191 @@
+---
+title: "Example 2"
+description: "Advanced integration patterns for experienced users"
+---
+
+## Overview
+
+This example demonstrates more advanced usage patterns for [your product]. It's designed for users who are already familiar with the basics and want to implement more sophisticated solutions.
+
+## Prerequisites
+
+Before starting this example, make sure you have:
+
+- Completed [Example 1](/examples/example-1)
+- [Additional prerequisite 1]
+- [Additional prerequisite 2]
+
+## Advanced Configuration
+
+For more complex scenarios, you can use advanced configuration options:
+
+```typescript
+const advancedConfig = {
+  // Basic options
+  environment: 'production',
+  timeout: 30000,
+  
+  // Advanced options
+  retryStrategy: {
+    maxRetries: 3,
+    backoffFactor: 1.5,
+    initialDelay: 1000
+  },
+  
+  caching: {
+    enabled: true,
+    ttl: 3600,
+    maxSize: 100
+  },
+  
+  logging: {
+    level: 'debug',
+    destination: 'console'
+  }
+};
+
+const client = new Client({
+  apiKey: process.env.API_KEY,
+  config: advancedConfig
+});
+```
+
+## Handling Multiple Operations
+
+This example shows how to handle multiple operations efficiently:
+
+```typescript
+async function processMultipleItems(items) {
+  // Create a batch of promises
+  const operations = items.map(item => 
+    client.process({
+      id: item.id,
+      data: item.data,
+      options: item.options || {}
+    })
+  );
+  
+  // Process all operations concurrently
+  const results = await Promise.allSettled(operations);
+  
+  // Separate successful and failed operations
+  const successful = results
+    .filter(result => result.status === 'fulfilled')
+    .map(result => result.value);
+    
+  const failed = results
+    .filter(result => result.status === 'rejected')
+    .map((result, index) => ({
+      item: items[index],
+      error: result.reason
+    }));
+    
+  return {
+    successful,
+    failed,
+    successRate: successful.length / items.length
+  };
+}
+```
+
+## Custom Error Handling
+
+Implement custom error handling for more robust applications:
+
+```typescript
+class CustomErrorHandler {
+  constructor(options = {}) {
+    this.retryableErrors = options.retryableErrors || [
+      'NETWORK_ERROR',
+      'TIMEOUT',
+      'RATE_LIMIT'
+    ];
+    this.maxRetries = options.maxRetries || 3;
+  }
+  
+  isRetryable(error) {
+    return this.retryableErrors.includes(error.code);
+  }
+  
+  async execute(operation, context = {}) {
+    let lastError;
+    let attempts = 0;
+    
+    while (attempts <= this.maxRetries) {
+      try {
+        attempts++;
+        return await operation();
+      } catch (error) {
+        lastError = error;
+        
+        if (!this.isRetryable(error) || attempts > this.maxRetries) {
+          break;
+        }
+        
+        const delay = Math.pow(2, attempts) * 100;
+        console.log(`Retrying after ${delay}ms (attempt ${attempts})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    
+    throw lastError;
+  }
+}
+
+// Usage
+const errorHandler = new CustomErrorHandler();
+
+try {
+  const result = await errorHandler.execute(() => 
+    client.process(complexData)
+  );
+  console.log('Success:', result);
+} catch (error) {
+  console.error('All retries failed:', error);
+}
+```
+
+## Event-Based Processing
+
+For long-running operations, you can use an event-based approach:
+
+```typescript
+client.on('processing.started', (jobId) => {
+  console.log(`Job ${jobId} started`);
+  updateUIStatus(jobId, 'processing');
+});
+
+client.on('processing.progress', (jobId, progress) => {
+  console.log(`Job ${jobId}: ${progress.percent}% complete`);
+  updateProgressBar(jobId, progress.percent);
+});
+
+client.on('processing.completed', (jobId, result) => {
+  console.log(`Job ${jobId} completed successfully`);
+  displayResults(jobId, result);
+});
+
+client.on('processing.failed', (jobId, error) => {
+  console.error(`Job ${jobId} failed:`, error);
+  showErrorMessage(jobId, error);
+});
+
+// Start a job
+const jobId = await client.startProcessing({
+  data: largeDataset,
+  options: {
+    async: true,
+    priority: 'high'
+  }
+});
+
+console.log(`Started job with ID: ${jobId}`);
+```
+
+## Next Steps
+
+After mastering these advanced patterns, you might want to:
+
+- Explore [Example 3](/examples/example-3) for integration with other systems
+- Learn about [specific advanced feature] in our [documentation link]
+- Check out our [API Reference](/api-reference/introduction) for complete details on all available options

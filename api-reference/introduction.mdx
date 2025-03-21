@@ -1,33 +1,49 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "API Reference"
+description: "Soldexer API endpoints for interacting with Solana datasets"
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Overview
 
-## Welcome
+Soldexer provides a powerful API for interacting with Solana blockchain data. The API allows you to query metadata, state information, and stream both real-time and finalized blocks.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+## Base URL
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
-
-## Authentication
-
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
-
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
 ```
+https://portal.sqd.dev/datasets/solana-beta
+```
+
+## Available Endpoints
+
+<CardGroup cols="2">
+  <Card
+    title="GET /metadata"
+    icon="circle-info"
+    href="/api-reference/endpoint/get-metadata"
+  ></Card>
+  <Card
+    title="GET /state"
+    icon="database"
+    href="/api-reference/endpoint/get-state"
+  ></Card>
+  <Card
+    title="POST /stream"
+    icon="stream"
+    href="/api-reference/endpoint/post-stream"
+  ></Card>
+  <Card
+    title="POST /finalized-stream"
+    icon="check-double"
+    href="/api-reference/endpoint/post-finalized-stream"
+  ></Card>
+  <Card
+    title="GET /head"
+    icon="arrow-up-right-dots"
+    href="/api-reference/endpoint/get-head"
+  ></Card>
+  <Card
+    title="GET /finalized-head"
+    icon="flag-checkered"
+    href="/api-reference/endpoint/get-finalized-head"
+  ></Card>
+</CardGroup>
