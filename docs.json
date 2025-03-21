@@ -4,12 +4,13 @@
   "name": "Soldexer.dev",
   "colors": {
     "primary": "#7750EE",
-    "light": "#7750EE",
-    "dark": "#7750EE"
+    "light": "#9272F1",
+    "dark": "#9272F1"
   },
   "favicon": "/favicon.svg",
   "banner": {
-    "content": "🚀 Soldexer is in Open Beta! [Learn more](/get-started/introduction)"
+    "content": "🚀 Soldexer is in Open Beta! [Learn more](/get-started/introduction)",
+    "dismissible": true
   },
   "navigation": {
     "tabs": [
@@ -39,12 +40,6 @@
               "learn-more/page-2",
               "learn-more/page-3",
               "learn-more/page-4"
-            ]
-          },
-          {
-            "group": "Resources",
-            "pages": [
-              "resources/brand-kit"
             ]
           },
           {
