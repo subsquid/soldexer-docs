@@ -1,11 +1,11 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
+  "theme": "maple",
   "name": "Soldexer.dev",
   "colors": {
-    "primary": "#0093ff",
-    "light": "#0093ff",
-    "dark": "#000000"
+    "primary": "#7750EE",
+    "light": "#7750EE",
+    "dark": "#7750EE"
   },
   "favicon": "/favicon.svg",
   "banner": {
@@ -39,6 +39,12 @@
               "learn-more/page-2",
               "learn-more/page-3",
               "learn-more/page-4"
+            ]
+          },
+          {
+            "group": "Resources",
+            "pages": [
+              "resources/brand-kit"
             ]
           },
           {
@@ -94,7 +100,7 @@
         {
           "anchor": "Community",
           "href": "https://t.me/+Rx3p5SS0PMtmNzQy",
-          "icon": "slack"
+          "icon": "telegram"
         }
       ]
     }
@@ -131,6 +137,10 @@
           {
             "label": "API Reference",
             "href": "https://docs.soldexer.dev/api-reference/introduction"
+          },
+          {
+            "label": "Brand Kit",
+            "href": "https://sqd-34796de3.mintlify.app/resources/brand-kit"
           }
         ]
       },
