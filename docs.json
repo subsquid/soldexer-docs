@@ -107,10 +107,6 @@
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "https://t.me/+Rx3p5SS0PMtmNzQy"
-      },
-      {
         "label": "Powered by SQD Network",
         "href": "https://www.sqd.ai/network"
       }
