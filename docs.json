@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
-  "name": "Soldexer.dev",
+  "name": "Soldexer",
   "colors": {
     "primary": "#7750EE",
     "light": "#9272F1",
@@ -15,7 +15,7 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "User Guides",
         "groups": [
           {
             "group": "Get Started",
@@ -23,14 +23,6 @@
               "get-started/introduction",
               "get-started/quickstart",
               "get-started/faq"
-            ]
-          },
-          {
-            "group": "Examples",
-            "pages": [
-              "examples/example-1",
-              "examples/example-2",
-              "examples/example-3"
             ]
           },
           {
@@ -47,6 +39,25 @@
             "pages": [
               "troubleshooting/common-issues",
               "troubleshooting/troubleshooting-guide"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Examples",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "examples/overview"
+            ]
+          },
+          {
+            "group": "Quickstarts",
+            "pages": [
+              "examples/example-1",
+              "examples/example-2",
+              "examples/example-3"
             ]
           }
         ]
@@ -79,7 +90,7 @@
           {
             "group": "Updates",
             "pages": [
-              "changelog/latest"
+              "changelog/latest-updates"
             ]
           }
         ]
@@ -105,12 +116,12 @@
     "dark": "/logo/dark.svg"
   },
   "navbar": {
-    "links": [
-      {
-        "label": "Powered by SQD Network",
-        "href": "https://www.sqd.ai/network"
-      }
-    ]
+    "links": [],
+    "primary": {
+      "type": "button",
+      "label": "Powered by SQD Network",
+      "href": "https://www.sqd.ai/network"
+    }
   },
   "footer": {
     "socials": {

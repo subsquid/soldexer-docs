@@ -1,14 +1,56 @@
 ---
 title: "Example 3"
-description: "Integrating with third-party services and systems"
+description: "A step-by-step guide for Example 3"
+image: "https://images.unsplash.com/photo-1642790551116-18e150f248e9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80"
 ---
 
-## Overview
+<Steps>
+  <Step title="Setup">
+    Step 1 description goes here.
+
+    ```typescript
+    // Step 1 code example
+    const setup = () => {
+      console.log("Setting up Example 3");
+    };
+    ```
+
+  </Step>
+
+  <Step title="Configuration">
+    Step 2 description goes here.
+
+    ```typescript
+    // Step 2 code example
+    const configure = () => {
+      return {
+        apiKey: "your-api-key",
+        endpoint: "https://api.example.com"
+      };
+    };
+    ```
+
+  </Step>
+
+  <Step title="Implementation">
+    Step 3 description goes here.
+
+    ```typescript
+    // Step 3 code example
+    const implement = async () => {
+      const data = await fetchData();
+      return processData(data);
+    };
+    ```
+
+  </Step>
+
+</Steps>
 
 ## Next Steps
 
-After exploring these integration examples, you might want to:
+Now that you've completed this example, you might want to:
 
-- Check out our [API Reference](/api-reference/introduction) for detailed information on all integration options
-- Learn about [specific integration feature] in our [documentation link]
-- Explore our [Troubleshooting Guide](/troubleshooting/troubleshooting-guide) for help with common integration issues
+- Try [Example 1](/examples/example-1) for basic integration
+- Explore [Example 2](/examples/example-2) for advanced queries
+- Check out our [API Reference](/api-reference/introduction) for more details
