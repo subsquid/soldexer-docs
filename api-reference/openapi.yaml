@@ -170,7 +170,7 @@ paths:
               description: Seconds to wait before retrying
   /head:
     get:
-      description: Returns the number and hash of the highest block available in the dataset.
+      description: Returns the slot number and hash of the highest block available in the dataset, or null if no blocks are available. Takes real-time data into account. Useful for diagnotics.
       responses:
         '200':
           description: Highest block information
@@ -180,7 +180,7 @@ paths:
                 $ref: '#/components/schemas/BlockHead'
   /finalized-head:
     get:
-      description: Returns the number and hash of the highest finalized block available in the dataset.
+      description: Returns the slot number and hash of the highest finalized block available in the dataset, or null if no blocks are available. Useful for diagnotics.
       responses:
         '200':
           description: Highest finalized block information
@@ -207,7 +207,7 @@ components:
         start_block:
           type: integer
           format: int64
-          description: The block number of the first known block
+          description: The slot number of the first known block
       required:
         - dataset
         - aliases
@@ -591,6 +591,7 @@ components:
         number:
           type: integer
           format: int64
+          description: Slot number of the highest available block
         hash:
           type: string
       nullable: true
