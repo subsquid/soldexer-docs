@@ -18,7 +18,7 @@ paths:
                 $ref: '#/components/schemas/DatasetMetadata'
   /state:
     get:
-      description: Provides a summary of stored block ranges for the dataset, useful for displaying network status.
+      description: Provides a summary of stored block ranges for the dataset. Useful for displaying network status.
       responses:
         '200':
           description: Dataset state response with block ranges
@@ -38,7 +38,7 @@ paths:
               $ref: '#/components/schemas/DataQuery'
       responses:
         '200':
-          description: A stream of blocks in gzipped JSON lines format
+          description: A stream of blocks in JSON lines format, optionally gzipped
           headers:
             X-Sqd-Finalized-Head-Number:
               schema:
@@ -99,7 +99,7 @@ paths:
               description: Seconds to wait before retrying
   /finalized-stream:
     post:
-      description: Streams only finalized blocks matching the provided data query.
+      description: Streams only finalized blocks matching the provided data query. Query structure is identical to that of the /stream endpoint
       requestBody:
         description: Data query to filter and retrieve finalized blocks
         required: true

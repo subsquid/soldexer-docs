@@ -66,22 +66,17 @@
         "tab": "API Reference",
         "groups": [
           {
-            "group": "API Documentation",
+            "group": "Core API",
             "pages": [
-              "api-reference/introduction"
-            ]
-          },
-          {
-            "group": "Main endpoints",
-            "pages": [
-              "api-reference/endpoint/get-metadata",
-              "api-reference/endpoint/get-head",
+              "api-reference/introduction",
               "api-reference/endpoint/post-stream"
             ]
           },
           {
             "group": "Aux endpoints",
             "pages": [
+              "api-reference/endpoint/get-metadata",
+              "api-reference/endpoint/get-head",
               "api-reference/endpoint/get-finalized-head",
               "api-reference/endpoint/post-finalized-stream",
               "api-reference/endpoint/get-state"
