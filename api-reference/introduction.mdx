@@ -37,7 +37,7 @@ Solana data is updated in real time and includes unfinalized blocks, enabling su
 
 ## Gotchas
 
-This somewhat idealized picture omits certain details:
+This somewhat idealized picture omits some details:
 
 1. The endpoint may terminate the stream of blocks at any point. To resume the stream the client must update the `fromBlock` and the optional `parentBlockHash` fields of its request and send the request to the API again.
 
@@ -54,11 +54,13 @@ This somewhat idealized picture omits certain details:
 
    To be able to detect and correctly process orphan blocks the client must
 
-   A. Maintain a backlog of hash values for recent blocks (available at the `.header.hash` field; enable it by setting the `.fields.block.hash` field of the request to `true`).
+   **A.** Maintain a backlog of hash values for recent blocks (available at the `.header.hash` field; enable it by setting the `.fields.block.hash` field of the request to `true`). Backlog depth of ten blocks should suffice on Solana.
 
-   B. Supply the `parentBlockHash` request field when resuming the stream after termination.
+   **B.** Be ready to restart its business logic at any block in the backlog. This may involve state rollbacks.
 
-   C. Expect HTTP 409 (Conflict) responses from the API. These occur when the server detects that the first block of the request does not exist in the current consensus / is an orphan. The response contains a list of blocks preceeding the one that was requested:
+   **C.** Supply the `parentBlockHash` request field when resuming the stream after termination.
+
+   **D.** Expect HTTP 409 (Conflict) responses from the API. These occur when the server detects that the first block of the request does not exist in the current consensus / is an orphan. The response contains a list of blocks preceeding the one that was requested:
    ```json
    {
      "previousBlocks": [
@@ -77,17 +79,24 @@ This somewhat idealized picture omits certain details:
      ]
    }
    ```
-   The client must use this response and its backlog of block hash values to find the latest consensus block it received. If no such block is found it can send another POST request with the earliest block from the current response and a wrong hash (e.g. the one from the backlog): an HTTP 409 response from the API will contain even earlier blocks that might match those found in the backlog.
+   The client must use this response and its block hash backlog to find the latest consensus block it received. If no such block is found it can send another POST request with the earliest block from the current response and a wrong hash (e.g. the one from the backlog): an HTTP 409 response from the API will contain even earlier blocks that might match those found in the backlog. This process can be repeated until the backlog is exhausted.
 
-   On Solana you should be able to find a non-orphaned block within 10 blocks from the chain head.
-
-   Once the client finds a non-orphaned block it should make sure that it can receive data from its slot number (e.g. by rolling back the database changes introduced due to orphan blocks), then resume the stream normally.
+   Once the client finds a non-orphaned block it should restart the business logic and resume the stream at its height.
 
    </Expandable>
 
-
 ## Base URL
 
+For Solana use
 ```
 https://portal.sqd.dev/datasets/solana-beta
 ```
+Other SVM networks TBA.
+
+## Other endpoints
+
+* [GET /metadata](/api-reference/endpoint/get-metadata) - dataset metadata. Includes the number of the lowest available slot.
+* [GET /head](/api-reference/endpoint/get-head) - slot number and hash of the highest block of the dataset.
+* [GET /finalized-head](/api-reference/endpoint/get-finalized-head) - same, but only for finalized blocks. In the current implementation it will be behind `/head` by some thousands of slots.
+* [POST /finalized-stream](/api-reference/endpoint/post-finalized-stream) - same as the main endpoint [POST /stream](/api-reference/endpoint/post-stream), but will only return finalized blocks, up to the height you can get from [GET /finalized-head](/api-reference/endpoint/get-finalized-head)
+* [GET /state](/api-reference/endpoint/get-state) - information on how the dataset is distributed within the SQD Network.
