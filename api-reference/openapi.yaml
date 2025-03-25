@@ -60,6 +60,10 @@ paths:
                   $ref: '#/components/schemas/Block'
         '204':
           description: Indicates that the requested block range is entirely above the range of blocks available in the dataset. The portal may wait for up to 5s before returning this
+          content:
+            text/plain:
+              schema:
+                type: string
           headers:
             X-Sqd-Finalized-Head-Number:
               schema:
@@ -76,11 +80,15 @@ paths:
           description: >
             Possible causes: (1) request headers or body encoding are incorrect; (2) the query is invalid - the response will include an explanation; (3) fromBlock is below the dataset's start_block (see /metadata)
           content:
-            application/json:
+            text/plain:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: string
         '404':
           description: Dataset not found
+          content:
+            text/plain:
+              schema:
+                type: string
         '409':
           description: Conflict due to a mismatched parent block hash. This will happen when the client requests a range starting with an orphaned block in the real time setting. The response contains a list of previous blocks belonging to the current chain; the client should find a block matching one of these (by both hash and slot number) in its records and restart the stream and its business logic from that block
           content:
@@ -89,6 +97,10 @@ paths:
                 $ref: '#/components/schemas/ConflictResponse'
         '429':
           description: Too many requests; rate limit exceeded. May include a Retry-After header indicating the number of seconds to wait before retrying the request
+          content:
+            text/plain:
+              schema:
+                type: string
           headers:
             Retry-After:
               schema:
@@ -96,8 +108,16 @@ paths:
               description: Seconds to wait before retrying
         '500':
           description: Internal server error. Do not retry requests causing these
+          content:
+            text/plain:
+              schema:
+                type: string
         '503':
           description: The server could not process the request at the moment. The client should retry the request later. May include a Retry-After header indicating the number of seconds to wait before retrying the request
+          content:
+            text/plain:
+              schema:
+                type: string
           headers:
             Retry-After:
               schema:
@@ -105,7 +125,8 @@ paths:
               description: Seconds to wait before retrying
   /finalized-stream:
     post:
-      description: Streams only finalized blocks matching the provided data query. Query structure is identical to that of the /stream endpoint. Required request headers: `Content-Type: application/json`; optional request headers: `Accept-Encoding: gzip` `Content-Encoding: gzip`
+      description: >
+        Streams only finalized blocks matching the provided data query. Query structure is identical to that of the /stream endpoint. Required request headers: `Content-Type: application/json`; optional request headers: `Accept-Encoding: gzip` `Content-Encoding: gzip`
       requestBody:
         description: Data query to filter and retrieve finalized blocks
         required: true
@@ -124,15 +145,23 @@ paths:
                   $ref: '#/components/schemas/Block'
         '204':
           description: Indicates that the requested block range is entirely above the range of blocks available in the dataset. The portal may wait for up to 5s before returning this
+          content:
+            text/plain:
+              schema:
+                type: string
         '400':
           description: >
             Possible causes: (1) request headers or body encoding are incorrect; (2) the query is invalid - the response will include an explanation; (3) fromBlock is below the dataset's start_block (see /metadata)
           content:
-            application/json:
+            text/plain:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: string
         '404':
           description: Dataset not found
+          content:
+            text/plain:
+              schema:
+                type: string
         '409':
           description: Conflict due to a mismatched parent block hash
           content:
@@ -141,6 +170,10 @@ paths:
                 $ref: '#/components/schemas/ConflictResponse'
         '429':
           description: Too many requests; rate limit exceeded. May include a Retry-After header indicating the number of seconds to wait before retrying the request
+          content:
+            text/plain:
+              schema:
+                type: string
           headers:
             Retry-After:
               schema:
@@ -148,8 +181,16 @@ paths:
               description: Seconds to wait before retrying
         '500':
           description: Internal server error. Do not retry requests causing these
+          content:
+            text/plain:
+              schema:
+                type: string
         '503':
           description: The server could not process the request at the moment. The client should retry the request later. May include a Retry-After header indicating the number of seconds to wait before retrying the request
+          content:
+            text/plain:
+              schema:
+                type: string
           headers:
             Retry-After:
               schema:
@@ -204,6 +245,7 @@ components:
       properties:
         worker_ranges:
           type: object
+          description: Keys are workers' peer ids
           additionalProperties:
             type: object
             properties:
@@ -223,10 +265,10 @@ components:
                     - end
         highest_seen_block:
           type: integer
-          format: int64
+          format: uint64
         first_gap:
           type: integer
-          format: int64
+          format: uint64
       required:
         - worker_ranges
         - highest_seen_block
@@ -876,14 +918,3 @@ components:
               - hash
       required:
         - previousBlocks
-    Error:
-      type: object
-      properties:
-        error:
-          type: integer
-          format: int32
-        message:
-          type: string
-      required:
-        - error
-        - message
