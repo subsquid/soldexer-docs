@@ -39,13 +39,6 @@
               "learn-more/page-1",
               "learn-more/page-2"
             ]
-          },
-          {
-            "group": "Troubleshooting",
-            "pages": [
-              "troubleshooting/common-issues",
-              "troubleshooting/troubleshooting-guide"
-            ]
           }
         ]
       },
