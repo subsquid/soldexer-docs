@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "maple",
+  "theme": "mint",
   "name": "Soldexer",
   "colors": {
     "primary": "#7750EE",
@@ -21,17 +21,23 @@
             "group": "Get Started",
             "pages": [
               "get-started/introduction",
-              "get-started/quickstart",
               "get-started/faq"
+            ]
+          },
+          {
+            "group": "Examples",
+            "pages": [
+              "examples/overview",
+              "examples/example-1",
+              "examples/example-2",
+              "examples/example-3"
             ]
           },
           {
             "group": "Learn More",
             "pages": [
               "learn-more/page-1",
-              "learn-more/page-2",
-              "learn-more/page-3",
-              "learn-more/page-4"
+              "learn-more/page-2"
             ]
           },
           {
@@ -39,25 +45,6 @@
             "pages": [
               "troubleshooting/common-issues",
               "troubleshooting/troubleshooting-guide"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Examples",
-        "groups": [
-          {
-            "group": "Getting Started",
-            "pages": [
-              "examples/overview"
-            ]
-          },
-          {
-            "group": "Quickstarts",
-            "pages": [
-              "examples/example-1",
-              "examples/example-2",
-              "examples/example-3"
             ]
           }
         ]
@@ -88,9 +75,30 @@
         "tab": "Changelog",
         "groups": [
           {
-            "group": "Updates",
+            "group": "Changelog",
             "pages": [
               "changelog/latest-updates"
+            ]
+          },
+          {
+            "group": "Release Notes",
+            "pages": [
+              "changelog/release-notes",
+              "changelog/v3.2.0",
+              "changelog/v3.1.3",
+              "changelog/v3.1.2",
+              "changelog/v3.1.1"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Resources",
+        "groups": [
+          {
+            "group": "Assets",
+            "pages": [
+              "resources/brand-kit"
             ]
           }
         ]

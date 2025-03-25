@@ -1,0 +1,118 @@
+---
+title: "Release Notes"
+description: "Detailed information about Soldexer releases"
+---
+
+<ReleaseNote version="v3.2.0" date="March 21, 2025">
+  ### Real-time Processing & Dashboard Improvements
+  
+  This release introduces real-time data processing capabilities and significant dashboard enhancements to improve your Soldexer experience.
+  
+  #### Key Features
+  
+  **Real-time Data Processing**
+  - Stream live Solana blockchain data with minimal latency
+  - Configure custom webhooks for real-time notifications
+  - Process and transform data on-the-fly with our new streaming API
+  
+  **Dashboard Improvements**
+  - Completely redesigned UI with dark mode support
+  - Customizable widgets for monitoring key metrics
+  - Drag-and-drop interface for creating personalized views
+  
+  **Advanced Filtering**
+  - Filter data by account, instruction type, or transaction status
+  - Create and save complex filter combinations
+  - Apply filters across historical and real-time data streams
+  
+  #### Developer Resources
+  - Updated TypeScript definitions for all new features
+  - New code examples in the documentation
+  - Performance optimization guide for high-throughput applications
+  
+  #### Breaking Changes
+  - Deprecated `legacy_stream` endpoint (will be removed in v4.0)
+  - Changed response format for batch processing API
+  - Updated authentication requirements for webhook configurations
+</ReleaseNote>
+
+<ReleaseNote version="v3.1.3" date="March 10, 2025">
+  ### Minor Updates
+  
+  This release includes bug fixes and minor improvements to enhance stability.
+  
+  #### Bug Fixes
+  
+  **API Stability**
+  - Fixed intermittent connection issues with WebSocket endpoints
+  - Resolved edge case in pagination that could cause duplicate results
+  - Fixed memory leak in long-running connections
+  
+  #### Documentation
+  - Updated code examples to use the latest API patterns
+  - Fixed broken links in the API reference
+  - Added troubleshooting section for common integration issues
+  
+  #### Developer Experience
+  - Improved error messages for authentication failures
+  - Enhanced logging for better debugging
+  - Added request ID tracking for support inquiries
+</ReleaseNote>
+
+<ReleaseNote version="v3.1.2" date="February 28, 2025">
+  ### Performance Optimization
+  
+  This release focuses on performance improvements and developer experience enhancements.
+  
+  #### Highlights
+  
+  **Performance Enhancements**
+  - Reduced memory usage by 40% for batch processing operations
+  - Improved query response times for complex filters
+  - Optimized data caching for frequently accessed information
+  
+  **Developer Tools**
+  - Added new code samples for React, Node.js, and Python integrations
+  - Improved error messages with actionable troubleshooting steps
+  - Enhanced logging capabilities for better debugging
+  
+  #### Security Updates
+  - Updated all dependencies to address CVE-2025-0842 and CVE-2025-0901
+  - Implemented additional input validation for all API endpoints
+  - Enhanced rate limiting to prevent abuse
+  
+  #### Bug Fixes
+  - Fixed race condition in the caching layer causing occasional data inconsistencies
+  - Resolved date formatting issues in exported reports
+  - Fixed webhook delivery reliability problems in high-load scenarios
+</ReleaseNote>
+
+<ReleaseNote version="v3.1.1" date="February 15, 2025">
+  ### Security & Stability
+  
+  This release addresses critical security and stability issues.
+  
+  #### Critical Fixes
+  
+  **Data Processing**
+  - Fixed a critical issue affecting data processing for datasets larger than 5GB
+  - Resolved memory leaks during extended processing operations
+  - Improved error handling for interrupted connections
+  
+  **Authentication**
+  - Fixed timeout issues with long-running authenticated sessions
+  - Resolved token refresh problems with certain OAuth providers
+  - Enhanced session management for improved security
+  
+  **SDK Improvements**
+  - Fixed incorrect error handling in the Node.js SDK
+  - Updated TypeScript definitions for better type safety
+  - Improved documentation for common integration patterns
+  
+  #### Security Enhancements
+  - Addressed XSS vulnerability in the dashboard (CVE-2025-0721)
+  - Implemented additional CSRF protections
+  - Enhanced input sanitization across all user-facing interfaces
+  
+  > **Note:** This is a critical security update. All users should upgrade as soon as possible.
+</ReleaseNote>
