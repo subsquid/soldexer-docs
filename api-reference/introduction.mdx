@@ -33,7 +33,7 @@ By using this general approach, you can
  - Ensure that you only get the data you need by using a rich palette of filters.
  - Request data related to the data that matches your filters. In the example above we could request all transactions that contain matching instructions, or even all token balance updates caused by such transactions.
 
-Solana data is updated in real time and includes unfinalized blocks, enabling subsecond latencies. Just omit the `toBlock` field in the request and you'll get the latest data.
+Solana data is updated in real time and includes unfinalized blocks, enabling latencies of 1-2 s. Just omit the `toBlock` field in the request and you'll get the latest data.
 
 ## Gotchas
 
@@ -41,7 +41,11 @@ This somewhat idealized picture omits some details:
 
 1. The endpoint may terminate the stream of blocks at any point. To resume the stream the client must update the `fromBlock` and the optional `parentBlockHash` fields of its request and send the request to the API again.
 
-   If your request specifies a `toBlock` you can tell that it's done when you get either a block with this slot number or an HTTP 204 (No Content) response.
+   Note that that does mean that our example theoretically could have taken two requests instead of one.
+
+   If your request specifies a `toBlock` you can tell that it's done when you get either a block with this slot number or an empty HTTP 200 response.
+
+   If the range of your request is entirely above the range of available blocks you'll get an HTTP 204 (No Content).
 
 2. Ensuring data correctness when streaming unfinalized blocks is somewhat complicated. If you don't want to deal with that complexity and don't mind that the newest available data is up to several hours old, use the alternative [`/finalized-stream` endpoint](/api-reference/endpoint/post-finalized-stream); otherwise read on.
 

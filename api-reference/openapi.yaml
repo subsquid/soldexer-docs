@@ -28,7 +28,8 @@ paths:
                 $ref: '#/components/schemas/DatasetState'
   /stream:
     post:
-      description: Streams a list of blocks matching the provided data query, potentially including real-time data.
+      description: >
+        Streams a list of blocks matching the provided data query, potentially including real-time data. Required request headers: `Content-Type: application/json`; optional request headers: `Accept-Encoding: gzip` `Content-Encoding: gzip`
       requestBody:
         description: Data query to filter and retrieve blocks
         required: true
@@ -38,17 +39,19 @@ paths:
               $ref: '#/components/schemas/DataQuery'
       responses:
         '200':
-          description: A stream of blocks in JSON lines format, optionally gzipped
+          description: A stream of blocks in JSON lines format, optionally gzipped. Can only be empty if the data query has a bounded range and all blocks in the range have been skipped. May include X-Sqd-Finalized-Head-Number and X-Sqd-Finalized-Head-Hash headers, indicating the latest finalized block that's on the same chain as the returned blocks
           headers:
             X-Sqd-Finalized-Head-Number:
               schema:
                 type: integer
                 format: int64
-              description: Number of the latest finalized block
+              description: Slot number of the latest finalized block. Returned blocks can be above, at or below this slot number
+              required: false
             X-Sqd-Finalized-Head-Hash:
               schema:
                 type: string
-              description: Hash of the latest finalized block
+              description: Hash of the latest finalized block. All returned blocks are guaranteed to belong to the same (not necessarily final) chain as this block
+              required: false
           content:
             application/json:
               schema:
@@ -56,19 +59,22 @@ paths:
                 items:
                   $ref: '#/components/schemas/Block'
         '204':
-          description: No content available above the latest block; waits up to 5 seconds if real-time is enabled
+          description: Indicates that the requested block range is entirely above the range of blocks available in the dataset. The portal may wait for up to 5s before returning this
           headers:
             X-Sqd-Finalized-Head-Number:
               schema:
                 type: integer
                 format: int64
-              description: Number of the latest finalized block
+              description: Slot number of the latest finalized block. Returned blocks can be above, at or below this slot number
+              required: false
             X-Sqd-Finalized-Head-Hash:
               schema:
                 type: string
-              description: Hash of the latest finalized block
+              description: Hash of the latest finalized block. All returned blocks are guaranteed to belong to the same (not necessarily final) chain as this block
+              required: false
         '400':
-          description: Bad request due to invalid query or encoding
+          description: >
+            Possible causes: (1) request headers or body encoding are incorrect; (2) the query is invalid - the response will include an explanation; (3) fromBlock is below the dataset's start_block (see /metadata)
           content:
             application/json:
               schema:
@@ -76,22 +82,22 @@ paths:
         '404':
           description: Dataset not found
         '409':
-          description: Conflict due to mismatched parent block hash
+          description: Conflict due to a mismatched parent block hash. This will happen when the client requests a range starting with an orphaned block in the real time setting. The response contains a list of previous blocks belonging to the current chain; the client should find a block matching one of these (by both hash and slot number) in its records and restart the stream and its business logic from that block
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConflictResponse'
         '429':
-          description: Too many requests; rate limit exceeded
+          description: Too many requests; rate limit exceeded. May include a Retry-After header indicating the number of seconds to wait before retrying the request
           headers:
             Retry-After:
               schema:
                 type: integer
               description: Seconds to wait before retrying
         '500':
-          description: Internal server error
+          description: Internal server error. Do not retry requests causing these
         '503':
-          description: Service unavailable; retry later
+          description: The server could not process the request at the moment. The client should retry the request later. May include a Retry-After header indicating the number of seconds to wait before retrying the request
           headers:
             Retry-After:
               schema:
@@ -99,7 +105,7 @@ paths:
               description: Seconds to wait before retrying
   /finalized-stream:
     post:
-      description: Streams only finalized blocks matching the provided data query. Query structure is identical to that of the /stream endpoint
+      description: Streams only finalized blocks matching the provided data query. Query structure is identical to that of the /stream endpoint. Required request headers: `Content-Type: application/json`; optional request headers: `Accept-Encoding: gzip` `Content-Encoding: gzip`
       requestBody:
         description: Data query to filter and retrieve finalized blocks
         required: true
@@ -109,17 +115,7 @@ paths:
               $ref: '#/components/schemas/DataQuery'
       responses:
         '200':
-          description: A stream of finalized blocks in gzipped JSON lines format
-          headers:
-            X-Sqd-Finalized-Head-Number:
-              schema:
-                type: integer
-                format: int64
-              description: Number of the latest finalized block
-            X-Sqd-Finalized-Head-Hash:
-              schema:
-                type: string
-              description: Hash of the latest finalized block
+          description: A stream of blocks in JSON lines format, optionally gzipped. Can only be empty if the data query has a bounded range and all blocks in the range have been skipped.
           content:
             application/json:
               schema:
@@ -127,19 +123,10 @@ paths:
                 items:
                   $ref: '#/components/schemas/Block'
         '204':
-          description: No finalized content available above the latest block
-          headers:
-            X-Sqd-Finalized-Head-Number:
-              schema:
-                type: integer
-                format: int64
-              description: Number of the latest finalized block
-            X-Sqd-Finalized-Head-Hash:
-              schema:
-                type: string
-              description: Hash of the latest finalized block
+          description: Indicates that the requested block range is entirely above the range of blocks available in the dataset. The portal may wait for up to 5s before returning this
         '400':
-          description: Bad request due to invalid query or encoding
+          description: >
+            Possible causes: (1) request headers or body encoding are incorrect; (2) the query is invalid - the response will include an explanation; (3) fromBlock is below the dataset's start_block (see /metadata)
           content:
             application/json:
               schema:
@@ -147,22 +134,22 @@ paths:
         '404':
           description: Dataset not found
         '409':
-          description: Conflict due to mismatched parent block hash
+          description: Conflict due to a mismatched parent block hash
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConflictResponse'
         '429':
-          description: Too many requests; rate limit exceeded
+          description: Too many requests; rate limit exceeded. May include a Retry-After header indicating the number of seconds to wait before retrying the request
           headers:
             Retry-After:
               schema:
                 type: integer
               description: Seconds to wait before retrying
         '500':
-          description: Internal server error
+          description: Internal server error. Do not retry requests causing these
         '503':
-          description: Service unavailable; retry later
+          description: The server could not process the request at the moment. The client should retry the request later. May include a Retry-After header indicating the number of seconds to wait before retrying the request
           headers:
             Retry-After:
               schema:
@@ -253,11 +240,13 @@ components:
         fromBlock:
           type: integer
           format: int64
-          description: The number of the first block to fetch
+          description: The number of the first block to fetch. If unsure how far into the past this can go consult /metadata
+          default: 317617480
         toBlock:
           type: integer
           format: int64
           description: The number of the last block to fetch (inclusive)
+          default: 317617482
         parentBlockHash:
           type: string
           description: Expected hash of the parent of the first requested block
@@ -266,30 +255,43 @@ components:
           description: If true, includes blocks with no matching data
         fields:
           type: object
+          description: Field selector. See the HTTP 200 response description for details on fields that aren't self-explanatory
           properties:
             instruction:
               type: object
+              description: Field selector for instructions
               properties:
+                transactionIndex:
+                  type: boolean
+                instructionAddress:
+                  type: boolean
                 programId:
                   type: boolean
                 accounts:
                   type: boolean
                 data:
                   type: boolean
-                isCommitted:
+                d1:
+                  type: boolean
+                d2:
+                  type: boolean
+                d4:
+                  type: boolean
+                d8:
+                  type: boolean
+                error:
                   type: boolean
                 computeUnitsConsumed:
                   type: boolean
-                error:
+                isCommitted:
                   type: boolean
                 hasDroppedLogMessages:
                   type: boolean
             transaction:
               type: object
+              description: Field selector for transaction
               properties:
-                signatures:
-                  type: boolean
-                err:
+                transactionIndex:
                   type: boolean
                 version:
                   type: boolean
@@ -305,17 +307,30 @@ components:
                   type: boolean
                 recentBlockhash:
                   type: boolean
-                computeUnitsConsumed:
+                signatures:
+                  type: boolean
+                err:
                   type: boolean
                 fee:
                   type: boolean
+                computeUnitsConsumed:
+                  type: boolean
                 loadedAddresses:
+                  type: boolean
+                feePayer:
                   type: boolean
                 hasDroppedLogMessages:
                   type: boolean
             log:
               type: object
+              description: Field selector for log messages
               properties:
+                transactionIndex:
+                  type: boolean
+                logIndex:
+                  type: boolean
+                instructionAddress:
+                  type: boolean
                 programId:
                   type: boolean
                 kind:
@@ -324,56 +339,81 @@ components:
                   type: boolean
             balance:
               type: object
+              description: Field selector for native token balance updates
               properties:
+                transactionIndex:
+                  type: boolean
+                account:
+                  type: boolean
                 pre:
                   type: boolean
                 post:
                   type: boolean
             tokenBalance:
               type: object
+              description: Field selector for token balance updates
               properties:
+                transactionIndex:
+                  type: boolean
+                account:
+                  type: boolean
                 preMint:
-                  type: boolean
-                preDecimals:
-                  type: boolean
-                preOwner:
-                  type: boolean
-                preAmount:
                   type: boolean
                 postMint:
                   type: boolean
+                preDecimals:
+                  type: boolean
                 postDecimals:
-                  type: boolean
-                postOwner:
-                  type: boolean
-                postAmount:
-                  type: boolean
-                postProgramId:
                   type: boolean
                 preProgramId:
                   type: boolean
+                postProgramId:
+                  type: boolean
+                preOwner:
+                  type: boolean
+                postOwner:
+                  type: boolean
+                preAmount:
+                  type: boolean
+                postAmount:
+                  type: boolean
             reward:
               type: object
+              description: Field selector for rewards
               properties:
+                pubKey:
+                  type: boolean
                 lamports:
                   type: boolean
-                rewardType:
-                  type: boolean
                 postBalance:
+                  type: boolean
+                rewardType:
                   type: boolean
                 commission:
                   type: boolean
             block:
               type: object
+              description: Field selector for block headers (the .header objects of JSON block records)
               properties:
-                slot:
+                number:
+                  type: boolean
+                height:
                   type: boolean
                 parentSlot:
                   type: boolean
                 timestamp:
                   type: boolean
+          default:
+            instruction:
+              data: true
+            block:
+              number: true
         instructions:
           type: array
+          default:
+            - programId:
+              - dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH
+          description: Instruction data requests. Selects instructions found anywhere in the call tree, not just top level ones. d1-d8 filter by the starting bytes of the data; a0-a15 filter by account at the corresponding position in the accounts array; mentionsAccount filters by account mentions anywhere in the list
           items:
             type: object
             properties:
@@ -398,6 +438,10 @@ components:
                 items:
                   type: string
               d8:
+                type: array
+                items:
+                  type: string
+              mentionsAccount:
                 type: array
                 items:
                   type: string
@@ -441,18 +485,53 @@ components:
                 type: array
                 items:
                   type: string
+              a10:
+                type: array
+                items:
+                  type: string
+              a11:
+                type: array
+                items:
+                  type: string
+              a12:
+                type: array
+                items:
+                  type: string
+              a13:
+                type: array
+                items:
+                  type: string
+              a14:
+                type: array
+                items:
+                  type: string
+              a15:
+                type: array
+                items:
+                  type: string
               isCommitted:
                 type: boolean
               transaction:
+                description: Fetch parent transactions for all matching instructions
+                type: boolean
+              transactionBalances:
+                description: Fetch native token balance updates caused by parent transactions of all matching instructions
                 type: boolean
               transactionTokenBalances:
+                description: Fetch token balance updates caused by parent transactions of all matching instructions
                 type: boolean
-              logs:
+              transactionInstructions:
+                description: Fetch all "sibling" instructions / instructions executed by parent transactions of all matching instructions
                 type: boolean
               innerInstructions:
+                description: Fetch all instructions called by matching instructions
+                type: boolean
+              logs:
+                description: Fetch logs produced by matching instructions
                 type: boolean
         transactions:
           type: array
+          description: Transaction data requests
           items:
             type: object
             properties:
@@ -460,12 +539,25 @@ components:
                 type: array
                 items:
                   type: string
+              mentionsAccount:
+                type: array
+                items:
+                  type: string
               instructions:
+                description: Fetch all instructions executed in the matching transactions
                 type: boolean
               logs:
+                description: Fetch all logs produced by the matching transactions
+                type: boolean
+              balances:
+                description: Fetch all native token balance updates due to the matching transactions
+                type: boolean
+              tokenBalances:
+                description: Fetch all token balance updates due to the matching transactions
                 type: boolean
         logs:
           type: array
+          description: Logs data requests
           items:
             type: object
             properties:
@@ -478,12 +570,15 @@ components:
                 items:
                   type: string
                   enum: ['log', 'data', 'other']
-              transaction:
-                type: boolean
               instruction:
+                description: Fetch parent instructions for all matching logs
+                type: boolean
+              transaction:
+                description: Fetch parent transactions for all matching logs
                 type: boolean
         balances:
           type: array
+          description: Requests for native token balance updates
           items:
             type: object
             properties:
@@ -492,11 +587,14 @@ components:
                 items:
                   type: string
               transaction:
+                description: Fetch parent transactions for all matching balance updates
                 type: boolean
               transactionInstructions:
+                description: Fetch all instructions executed by parent transactions of all matching balance updates
                 type: boolean
         tokenBalances:
           type: array
+          description: Requests for token balance updates
           items:
             type: object
             properties:
@@ -529,11 +627,14 @@ components:
                 items:
                   type: string
               transaction:
+                description: Fetch parent transactions for all matching balance updates
                 type: boolean
               transactionInstructions:
+                description: Fetch all instructions executed by parent transactions of all matching balance updates
                 type: boolean
         rewards:
           type: array
+          description: Reward data requests
           items:
             type: object
             properties:
@@ -551,12 +652,15 @@ components:
           properties:
             number:
               type: integer
-              format: int64
+              format: uint64
+            height:
+              type: integer
+              format: uint64
+            parentSlot:
+              type: integer
+              format: uint64
             hash:
               type: string
-          required:
-            - number
-            - hash
         instructions:
           type: array
           items:
@@ -565,6 +669,7 @@ components:
               transactionIndex:
                 type: integer
               instructionAddress:
+                description: An array of tree indices addressing the instruction in the call tree. Top level instructions get addresses [0], [1], ...; addresses of length 2 indicate inner instructions directly called by one of the top ones; and so on.
                 type: array
                 items:
                   type: integer
@@ -576,15 +681,173 @@ components:
                   type: string
               data:
                 type: string
-              isCommitted:
-                type: boolean
+              d1:
+                description: One byte instruction discriminator
+                type: string
+              d2:
+                description: Two bytes instruction discriminator
+                type: string
+              d4:
+                description: Four bytes instruction discriminator
+                type: string
+              d8:
+                description: Eight bytes instruction discriminator (Anchor standard)
+                type: string
+              error:
+                type: string
               computeUnitsConsumed:
                 type: integer
-                format: int64
-              error:
+                format: uint64
+              isCommitted:
+                type: boolean
+              hasDroppedLogMessages:
+                type: boolean
+        transactions:
+          type: array
+          items:
+            type: object
+            properties:
+              transactionIndex:
+                type: integer
+              version:
+                type: integer
+              accountKeys:
+                type: array
+                items:
+                  type: integer
+              addressTableLookups:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    accountKey:
+                      type: string
+                    readonlyIndexes:
+                      type: array
+                      items:
+                        type: integer
+                    writableIndexes:
+                      type: array
+                      items:
+                        type: integer
+              numReadonlySignedAccounts:
+                type: integer
+              numReadonlyUnsignedAccounts:
+                type: integer
+              numRequiredSignatures:
+                type: integer
+              recentBlockhash:
+                type: string
+              signatures:
+                description: List of transaction signatures. The first one of these is also known as a "transaction hash"
+                type: array
+                items:
+                  type: string
+              err:
+                type: object
+                nullable: true
+              fee:
+                type: integer
+              computeUnitsConsumed:
+                type: integer
+              loadedAddresses:
+                type: object
+                properties:
+                  readonly:
+                    type: array
+                    items:
+                      type: string
+                  writable:
+                    type: array
+                    items:
+                      type: string
+              feePayer:
                 type: string
               hasDroppedLogMessages:
                 type: boolean
+        logs:
+          type: array
+          items:
+            type: object
+            properties:
+              transactionIndex:
+                type: integer
+              logIndex:
+                type: integer
+              instructionAddress:
+                description: Address of the instruction that produced the log. See the instruction field description for details (HTTP 200 response description -> instructions -> instructionAddress)
+                type: array
+                items:
+                  type: integer
+              programId:
+                type: string
+              kind:
+                type: string
+                enum:
+                  - log
+                  - data
+                  - other
+              message:
+                type: string
+        balances:
+          type: array
+          items:
+            type: object
+            properties:
+              transactionIndex:
+                type: integer
+              account:
+                type: string
+              pre:
+                type: integer
+              post:
+                type: integer
+        tokenBalances:
+          type: array
+          items:
+            type: object
+            properties:
+              transactionIndex:
+                type: integer
+              account:
+                type: string
+              preMint:
+                type: string
+              postMint:
+                type: string
+              preDecimals:
+                type: integer
+              postDecimals:
+                type: integer
+              preProgramId:
+                type: string
+              postProgramId:
+                type: string
+              preOwner:
+                type: string
+              postOwner:
+                type: string
+              preAmount:
+                type: integer
+              postAmount:
+                type: integer
+        rewards:
+          type: array
+          items:
+            type: object
+            properties:
+              pubKey:
+                type: string
+              lamports:
+                type: integer
+              postBalance:
+                type: integer
+              rewardType:
+                type: string
+              commission:
+                type: integer
+      required:
+        - header
     BlockHead:
       type: object
       properties:
