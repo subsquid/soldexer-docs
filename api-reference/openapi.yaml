@@ -484,6 +484,7 @@ components:
                 items:
                   type: string
               mentionsAccount:
+                description: Selects instructions that mention a given account anywhere in their account lists, including at the positions higher than these accessible by the a* filters listed below
                 type: array
                 items:
                   type: string
@@ -566,7 +567,7 @@ components:
                 description: Fetch all "sibling" instructions / instructions executed by parent transactions of all matching instructions
                 type: boolean
               innerInstructions:
-                description: Fetch all instructions called by matching instructions
+                description: Fetch all instructions called by matching instructions (entire subtrees, not just the ones called directly)
                 type: boolean
               logs:
                 description: Fetch logs produced by matching instructions
