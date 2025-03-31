@@ -9,7 +9,7 @@
   },
   "favicon": "/soldexer-favicon.svg",
   "banner": {
-    "content": "🚀 Soldexer is in Open Beta! [Learn more](/get-started/introduction)",
+    "content": "🚀 Soldexer is in Open Beta! [Learn more](/changelog/soldexer-open-beta)",
     "dismissible": true
   },
   "navigation": {
