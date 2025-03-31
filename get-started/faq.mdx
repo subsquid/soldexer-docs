@@ -6,59 +6,78 @@ description: "Common questions and answers about Soldexer"
 ## General Questions
 
 <Accordion title="What is Soldexer?">
-  
+  Soldexer is a high-throughput data service for accessing Solana's historical
+  and real-time data. It processes 10MB+ per request with ~2-3 second latency,
+  making it significantly faster than running your own node.
 </Accordion>
 
 <Accordion title="How does it work?">
-  
+  Soldexer uses a decentralized network of 1,900+ worker nodes ([SQD
+  Network](https://network.subsquid.io/dashboard)) to index and process Solana
+  data. You make API calls to request specific data, and Soldexer returns it
+  filtered and transformed according to your needs.
 </Accordion>
 
 <Accordion title="What's the connection between SQD and Soldexer?">
-  
+  [SQD Network](https://network.subsquid.io/dashboard) by [SQD](https://sqd.ai)
+  provides the decentralized infrastructure that powers Soldexer. The network's
+  1,900+ worker nodes ensure reliable data processing and transparent
+  architecture.
 </Accordion>
 
 <Accordion title="What's the pricing model?">
-  
+  Pay-as-you-go based on actual usage. No upfront costs or commitments. This is
+  significantly cheaper than running your own Geyser node (~$2k+/month) or using
+  proprietary APIs.
+</Accordion>
+
+<Accordion title="How does Soldexer compare to alternatives?">
+  Here's how Soldexer compares to other solutions:
+
+| Capability                 | Soldexer                                             | Geyser Node by Helius                                                             | Dune Analytics                                         | Other Solutions (QuickNode, Alchemy)                                                          |
+| -------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+| Speed & Throughput         | ✅ Pull 10MB+ per request with ~2s latency           | ⚪ Real-time streaming, optimized for low latency but not bulk data requests      | ⚪ SQL queries with variable execution times           | ❌ Slower response times for high-volume queries; optimized for general-purpose RPC calls     |
+| Transformation & Filtering | ✅ Built-in composable pipelines at source level     | ⚪ Requires custom plugin development for filtering                               | ⚪ SQL-based filtering, fixed to predefined SQL syntax | ❌ Limited filtering capabilities; requires external tools for advanced processing            |
+| Historical Access          | ✅ Full archive (in progress)                        | ❌ Real-time only unless paired with external DB                                  | ✅ Extensive historical access                         | ⚪ Some archive data available but often slower and less efficient for large-scale queries    |
+| Setup Complexity           | ✅ Ready out-of-the-box via SQD portal               | ⚪ Simplified with "Automatic Private Nodes" but needs DevOps for advanced setups | ✅ Easy to start, but limited flexibility              | ⚪ Easy setup via managed services but lacks customization options                            |
+| Scalability                | ✅ Stateless, horizontally scalable                  | ⚪ Scalable with dedicated hardware but constrained by infrastructure costs       | ⚪ Platform-dependent scalability                      | ❌ Limited scalability for high-frequency workloads; performance tied to pricing tiers        |
+| Architecture               | ✅ Decentralized (via SQD Network)                   | ⚪ Centralized validator or custom hosting                                        | ❌ Fully centralized platform                          | ❌ Fully centralized infrastructure reliant on proprietary APIs                               |
+| Cost Efficiency            | ✅ Pay-as-you-go, ultra-economic                     | ❌ High infra/validator maintenance                                               | ⚪ Free-to-query for basic use                         | ❌ Higher costs for enterprise-grade services; pay-as-you-go models can be expensive at scale |
+| Developer Experience       | ✅ Built for engineers: streaming, filtering, piping | ❌ DIY heavy, plugin extensibility requires expertise                             | ⚪ SQL-only, no programming extensibility              | ⚪ Simplified APIs and dashboards but limited flexibility for custom solutions                |
+
 </Accordion>
 
 <Accordion title="I have a few questions, where can I ask them?">
-  
+  Join our [Telegram community](https://t.me/+Rx3p5SS0PMtmNzQy) for direct
+  support and discussions.
 </Accordion>
 
 ## Technical Questions
 
 <Accordion title="How do I use the API reference?">
-  
+  Check our API reference section for endpoint documentation, request/response
+  formats, and example calls. Each endpoint includes usage examples and
+  parameter descriptions.
 </Accordion>
 
 <Accordion title="What programming languages and frameworks are supported?">
-  
+  Soldexer provides a REST API that works with any programming language or
+  framework that can make HTTP requests. See our API section to learn more.
 </Accordion>
 
 <Accordion title="How do I filter data for specific accounts or instructions?">
-  
-</Accordion>
-
-<Accordion title="What's the difference between real-time and historical data access?">
-  
-</Accordion>
-
-<Accordion title="How can I transform and normalize the data I receive?">
-  
+  Use our granular filtering system to target specific accounts, instructions,
+  programs, or transaction types. You can combine multiple filters in a single
+  request for precise data retrieval.
 </Accordion>
 
 <Accordion title="Are there rate limits or usage quotas?">
-  
-</Accordion>
-
-<Accordion title="How do I handle pagination for large data sets?">
-  
+  Yes, there are rate limits for public endpoints. TBD
 </Accordion>
 
 <Accordion title="Can I use Soldexer with my existing data pipeline?">
-  
-</Accordion>
-
-<Accordion title="How do I debug issues with my data queries?">
-  
+  Yes. Soldexer's REST API and standardized data formats make it easy to
+  integrate with existing ETL pipelines, databases, or analytics tools. See e.g.
+  [this example by Cherry
+  library](https://github.com/steelcake/cherry-core/blob/main/python/examples/solana.py).
 </Accordion>
