@@ -455,7 +455,7 @@ components:
           default:
             - programId:
               - dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH
-          description: Instruction data requests. Selects instructions found anywhere in the call tree, not just top level ones. d1-d8 filter by the starting bytes of the data; a0-a15 filter by account at the corresponding position in the accounts array; mentionsAccount filters by account mentions anywhere in the list
+          description: Instruction data requests. Selects instructions found anywhere in the call tree, not just top level ones. d1-d8 filter by the starting bytes of the data (in 0x-prefixed hex format); a0-a15 filter by account at the corresponding position in the accounts array; mentionsAccount filters by account mentions anywhere in the list
           items:
             type: object
             properties:
@@ -464,22 +464,27 @@ components:
                 items:
                   type: string
               d1:
+                description: Accepted values for the first byte of the data in 0x-prefixed hex format
                 type: array
                 items:
                   type: string
               d2:
+                description: Accepted values for the first two bytes of the data in 0x-prefixed hex format
                 type: array
                 items:
                   type: string
               d3:
+                description: Accepted values for the first three bytes of the data in 0x-prefixed hex format
                 type: array
                 items:
                   type: string
               d4:
+                description: Accepted values for the first four bytes of the data in 0x-prefixed hex format
                 type: array
                 items:
                   type: string
               d8:
+                description: Accepted values for the first eight bytes of the data in 0x-prefixed hex format
                 type: array
                 items:
                   type: string
