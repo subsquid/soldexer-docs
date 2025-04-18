@@ -1,0 +1,973 @@
+openapi: 3.1.0
+info:
+  title: SQD Network Portal API - EVM Dataset Endpoints
+  description: API endpoints for interacting with EVM datasets under the SQD Network Portal, specifically for the Ethereum Mainnet dataset.
+  version: 1.0.0
+servers:
+  - url: https://portal.sqd.dev/datasets/ethereum-mainnet
+    description: SQD Portal's endpoint for Ethereum Mainnet
+paths:
+  /metadata:
+    get:
+      description: Retrieves metadata describing the dataset, including its name, aliases, start block, and real-time status.
+      responses:
+        '200':
+          description: Dataset metadata response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetMetadata'
+  /state:
+    get:
+      description: Provides a summary of stored block ranges for the dataset. Useful for displaying network status.
+      responses:
+        '200':
+          description: Dataset state response with block ranges
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetState'
+  /stream:
+    post:
+      description: >
+        Streams a list of blocks matching the provided data query, potentially including real-time data. Required request headers: `Content-Type: application/json`; optional request headers: `Accept-Encoding: gzip`, `Content-Encoding: gzip`.
+      requestBody:
+        description: Data query to filter and retrieve blocks
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataQuery'
+      responses:
+        '200':
+          description: A stream of blocks in JSON lines format, optionally gzipped. Can be empty if the data query has a bounded range and all blocks in the range have been skipped. May include X-Sqd-Finalized-Head-Number and X-Sqd-Finalized-Head-Hash headers, indicating the latest finalized block that's on the same chain as the returned blocks.
+          headers:
+            X-Sqd-Finalized-Head-Number:
+              schema:
+                type: integer
+                format: int64
+              description: Block number of the latest finalized block. Returned blocks can be above, at, or below this block number.
+              required: false
+            X-Sqd-Finalized-Head-Hash:
+              schema:
+                type: string
+              description: Hash of the latest finalized block. All returned blocks are guaranteed to belong to the same (not necessarily final) chain as this block.
+              required: false
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Block'
+        '204':
+          description: Indicates that the requested block range is entirely above the range of blocks available in the dataset. The portal may wait for up to 5s before returning this.
+          content:
+            text/plain:
+              schema:
+                type: string
+          headers:
+            X-Sqd-Finalized-Head-Number:
+              schema:
+                type: integer
+                format: int64
+              description: Block number of the latest finalized block.
+              required: false
+            X-Sqd-Finalized-Head-Hash:
+              schema:
+                type: string
+              description: Hash of the latest finalized block.
+              required: false
+        '400':
+          description: >
+            Possible causes: (1) request headers or body encoding are incorrect; (2) the query is invalid - the response will include an explanation; (3) fromBlock is below the dataset's start_block (see /metadata).
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Dataset not found
+          content:
+            text/plain:
+              schema:
+                type: string
+        '409':
+          description: Conflict due to a mismatched parent block hash. This will happen when the client requests a range starting with an orphaned block in the real-time setting. The response contains a list of previous blocks belonging to the current chain; the client should find a block matching one of these (by both hash and block number) in its records and restart the stream and its business logic from that block.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictResponse'
+        '429':
+          description: Too many requests; rate limit exceeded. May include a Retry-After header indicating the number of seconds to wait before retrying the request.
+          content:
+            text/plain:
+              schema:
+                type: string
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying
+        '500':
+          description: Internal server error. Do not retry requests causing these.
+          content:
+            text/plain:
+              schema:
+                type: string
+        '503':
+          description: The server could not process the request at the moment. The client should retry the request later. May include a Retry-After header indicating the number of seconds to wait before retrying the request.
+          content:
+            text/plain:
+              schema:
+                type: string
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying
+  /finalized-stream:
+    post:
+      description: >
+        Streams only finalized blocks matching the provided data query. Query structure is identical to that of the /stream endpoint. Required request headers: `Content-Type: application/json`; optional request headers: `Accept-Encoding: gzip`, `Content-Encoding: gzip`.
+      requestBody:
+        description: Data query to filter and retrieve finalized blocks
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataQuery'
+      responses:
+        '200':
+          description: A stream of finalized blocks in JSON lines format, optionally gzipped. Can be empty if the data query has a bounded range and all blocks in the range have been skipped.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Block'
+        '204':
+          description: Indicates that the requested block range is entirely above the range of blocks available in the dataset. The portal may wait for up to 5s before returning this.
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: >
+            Possible causes: (1) request headers or body encoding are incorrect; (2) the query is invalid - the response will include an explanation; (3) fromBlock is below the dataset's start_block (see /metadata).
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Dataset not found
+          content:
+            text/plain:
+              schema:
+                type: string
+        '409':
+          description: Conflict due to a mismatched parent block hash.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConflictResponse'
+        '429':
+          description: Too many requests; rate limit exceeded. May include a Retry-After header indicating the number of seconds to wait before retrying the request.
+          content:
+            text/plain:
+              schema:
+                type: string
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying
+        '500':
+          description: Internal server error. Do not retry requests causing these.
+          content:
+            text/plain:
+              schema:
+                type: string
+        '503':
+          description: The server could not process the request at the moment. The client should retry the request later. May include a Retry-After header indicating the number of seconds to wait before retrying the request.
+          content:
+            text/plain:
+              schema:
+                type: string
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying
+  /head:
+    get:
+      description: Returns the block number and hash of the highest block available in the dataset, or null if no blocks are available. Takes real-time data into account. Useful for diagnostics.
+      responses:
+        '200':
+          description: Highest block information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlockHead'
+  /finalized-head:
+    get:
+      description: Returns the block number and hash of the highest finalized block available in the dataset, or null if no blocks are available. Useful for diagnostics.
+      responses:
+        '200':
+          description: Highest finalized block information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlockHead'
+components:
+  schemas:
+    DatasetMetadata:
+      type: object
+      properties:
+        dataset:
+          type: string
+          description: The default name used to reference this dataset (e.g., ethereum-mainnet).
+        aliases:
+          type: array
+          items:
+            type: string
+          description: Alternative names for the dataset.
+        real_time:
+          type: boolean
+          description: Indicates if the dataset has real-time data.
+        start_block:
+          type: integer
+          format: int64
+          description: The block number of the first known block.
+      required:
+        - dataset
+        - aliases
+        - real_time
+    DatasetState:
+      type: object
+      properties:
+        worker_ranges:
+          type: object
+          description: Keys are workers' peer IDs.
+          additionalProperties:
+            type: object
+            properties:
+              ranges:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    begin:
+                      type: integer
+                      format: int64
+                    end:
+                      type: integer
+                      format: int64
+                  required:
+                    - begin
+                    - end
+        highest_seen_block:
+          type: integer
+          format: uint64
+          description: The highest block number seen in the dataset.
+        first_gap:
+          type: integer
+          format: uint64
+          description: The first block number where a gap in data exists, if any.
+      required:
+        - worker_ranges
+        - highest_seen_block
+    DataQuery:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: ["evm"]
+          default: "evm"
+          description: The type of blockchain data (fixed to EVM for this API).
+        fromBlock:
+          type: integer
+          format: int64
+          description: The block number to start fetching from (inclusive).
+        toBlock:
+          type: integer
+          format: int64
+          description: The block number to fetch up to (inclusive). Optional; if omitted, streams until dataset height or timeout.
+        parentBlockHash:
+          type: string
+          description: Expected hash of the parent of the first requested block.
+        includeAllBlocks:
+          type: boolean
+          description: If true, includes blocks with no matching data in the response.
+          default: false
+        fields:
+          type: object
+          description: Field selector for data items to retrieve.
+          properties:
+            block:
+              type: object
+              description: Field selector for block headers.
+              properties:
+                hash:
+                  type: boolean
+                height:
+                  type: boolean
+                parentHash:
+                  type: boolean
+                timestamp:
+                  type: boolean
+                nonce:
+                  type: boolean
+                sha3Uncles:
+                  type: boolean
+                logsBloom:
+                  type: boolean
+                transactionsRoot:
+                  type: boolean
+                stateRoot:
+                  type: boolean
+                receiptsRoot:
+                  type: boolean
+                mixHash:
+                  type: boolean
+                miner:
+                  type: boolean
+                difficulty:
+                  type: boolean
+                totalDifficulty:
+                  type: boolean
+                extraData:
+                  type: boolean
+                size:
+                  type: boolean
+                gasLimit:
+                  type: boolean
+                gasUsed:
+                  type: boolean
+                baseFeePerGas:
+                  type: boolean
+                l1BlockNumber:
+                  type: boolean
+              default:
+                hash: true
+                height: true
+                parentHash: true
+            transaction:
+              type: object
+              description: Field selector for transactions.
+              properties:
+                transactionIndex:
+                  type: boolean
+                from:
+                  type: boolean
+                to:
+                  type: boolean
+                hash:
+                  type: boolean
+                gas:
+                  type: boolean
+                gasPrice:
+                  type: boolean
+                maxFeePerGas:
+                  type: boolean
+                maxPriorityFeePerGas:
+                  type: boolean
+                input:
+                  type: boolean
+                nonce:
+                  type: boolean
+                value:
+                  type: boolean
+                v:
+                  type: boolean
+                r:
+                  type: boolean
+                s:
+                  type: boolean
+                yParity:
+                  type: boolean
+                chainId:
+                  type: boolean
+                gasUsed:
+                  type: boolean
+                cumulativeGasUsed:
+                  type: boolean
+                effectiveGasPrice:
+                  type: boolean
+                contractAddress:
+                  type: boolean
+                type:
+                  type: boolean
+                status:
+                  type: boolean
+                sighash:
+                  type: boolean
+                l1Fee:
+                  type: boolean
+                l1FeeScalar:
+                  type: boolean
+                l1GasPrice:
+                  type: boolean
+                l1GasUsed:
+                  type: boolean
+                l1BlobBaseFee:
+                  type: boolean
+                l1BlobBaseFeeScalar:
+                  type: boolean
+                l1BaseFeeScalar:
+                  type: boolean
+              default:
+                hash: true
+            log:
+              type: object
+              description: Field selector for logs.
+              properties:
+                logIndex:
+                  type: boolean
+                transactionIndex:
+                  type: boolean
+                address:
+                  type: boolean
+                data:
+                  type: boolean
+                topics:
+                  type: boolean
+                transactionHash:
+                  type: boolean
+              default:
+                topics: true
+            trace:
+              type: object
+              description: Field selector for traces.
+              properties:
+                transactionIndex:
+                  type: boolean
+                traceAddress:
+                  type: boolean
+                type:
+                  type: boolean
+                subtraces:
+                  type: boolean
+                error:
+                  type: boolean
+                createFrom:
+                  type: boolean
+                createValue:
+                  type: boolean
+                createGas:
+                  type: boolean
+                createInit:
+                  type: boolean
+                createResultGasUsed:
+                  type: boolean
+                createResultCode:
+                  type: boolean
+                createResultAddress:
+                  type: boolean
+                callFrom:
+                  type: boolean
+                callTo:
+                  type: boolean
+                callValue:
+                  type: boolean
+                callGas:
+                  type: boolean
+                callSighash:
+                  type: boolean
+                callInput:
+                  type: boolean
+                callResultGasUsed:
+                  type: boolean
+                callResultOutput:
+                  type: boolean
+                suicideAddress:
+                  type: boolean
+                suicideRefundAddress:
+                  type: boolean
+                suicideBalance:
+                  type: boolean
+                rewardAuthor:
+                  type: boolean
+                rewardValue:
+                  type: boolean
+                rewardType:
+                  type: boolean
+            stateDiff:
+              type: object
+              description: Field selector for state diffs.
+              properties:
+                transactionIndex:
+                  type: boolean
+                address:
+                  type: boolean
+                key:
+                  type: boolean
+                kind:
+                  type: boolean
+                prev:
+                  type: boolean
+                next:
+                  type: boolean
+        logs:
+          type: array
+          description: Log data requests.
+          items:
+            type: object
+            properties:
+              address:
+                type: array
+                items:
+                  type: string
+                description: Contract addresses emitting the logs (lowercase).
+              topic0:
+                type: array
+                items:
+                  type: string
+                description: First topic of the log (e.g., event signature).
+              topic1:
+                type: array
+                items:
+                  type: string
+              topic2:
+                type: array
+                items:
+                  type: string
+              topic3:
+                type: array
+                items:
+                  type: string
+              transaction:
+                type: boolean
+                description: Fetch parent transactions for matching logs.
+              transactionTraces:
+                type: boolean
+                description: Fetch traces for parent transactions.
+              transactionLogs:
+                type: boolean
+                description: Fetch all logs emitted by parent transactions.
+            description: An empty object matches all logs; an empty array matches no logs.
+        transactions:
+          type: array
+          description: Transaction data requests.
+          items:
+            type: object
+            properties:
+              from:
+                type: array
+                items:
+                  type: string
+                description: Sender addresses (lowercase).
+              to:
+                type: array
+                items:
+                  type: string
+                description: Recipient addresses (lowercase).
+              sighash:
+                type: array
+                items:
+                  type: string
+                description: Function signature hashes (e.g., 0xa9059cbb for transfer).
+              logs:
+                type: boolean
+                description: Fetch all logs emitted by matching transactions.
+              traces:
+                type: boolean
+                description: Fetch all traces for matching transactions.
+              stateDiffs:
+                type: boolean
+                description: Fetch all state diffs caused by matching transactions.
+            description: An empty object matches all transactions; an empty array matches no transactions.
+        traces:
+          type: array
+          description: Trace data requests.
+          items:
+            type: object
+            properties:
+              type:
+                type: array
+                items:
+                  type: string
+                  enum: ["create", "call", "suicide", "reward"]
+                description: Type of trace.
+              createFrom:
+                type: array
+                items:
+                  type: string
+                description: Address initiating a create trace.
+              callFrom:
+                type: array
+                items:
+                  type: string
+                description: Address initiating a call trace.
+              callTo:
+                type: array
+                items:
+                  type: string
+                description: Address receiving a call trace.
+              callSighash:
+                type: array
+                items:
+                  type: string
+                description: Function signature hash for call traces.
+              suicideRefundAddress:
+                type: array
+                items:
+                  type: string
+                description: Refund address for suicide traces.
+              rewardAuthor:
+                type: array
+                items:
+                  type: string
+                description: Author receiving a reward trace.
+              transaction:
+                type: boolean
+                description: Fetch parent transactions for matching traces.
+              transactionLogs:
+                type: boolean
+                description: Fetch all logs emitted by parent transactions.
+              subtraces:
+                type: boolean
+                description: Fetch all subtraces of matching traces.
+              parents:
+                type: boolean
+                description: Fetch parent traces of matching traces.
+            description: An empty object matches all traces; an empty array matches no traces.
+        stateDiffs:
+          type: array
+          description: State diff data requests.
+          items:
+            type: object
+            properties:
+              address:
+                type: array
+                items:
+                  type: string
+                description: Contract or account addresses (lowercase).
+              key:
+                type: array
+                items:
+                  type: string
+                description: Storage keys or special keys (balance, code, nonce).
+              kind:
+                type: array
+                items:
+                  type: string
+                  enum: ["=", "+", "*", "-"]
+                description: Type of state change.
+              transaction:
+                type: boolean
+                description: Fetch parent transactions for matching state diffs.
+            description: An empty object matches all state diffs; an empty array matches no state diffs.
+      required:
+        - fromBlock
+    Block:
+      type: object
+      properties:
+        header:
+          type: object
+          properties:
+            number:
+              type: integer
+              format: uint64
+              description: Block number.
+            height:
+              type: integer
+              format: uint64
+              description: Block height (same as number for EVM).
+            hash:
+              type: string
+              description: Block hash.
+            parentHash:
+              type: string
+              description: Parent block hash.
+            timestamp:
+              type: integer
+              description: Block timestamp.
+            nonce:
+              type: string
+              description: Block nonce.
+            sha3Uncles:
+              type: string
+            logsBloom:
+              type: string
+            transactionsRoot:
+              type: string
+            stateRoot:
+              type: string
+            receiptsRoot:
+              type: string
+            mixHash:
+              type: string
+            miner:
+              type: string
+            difficulty:
+              type: integer
+              format: uint64
+            totalDifficulty:
+              type: integer
+              format: uint64
+            extraData:
+              type: string
+            size:
+              type: integer
+              format: uint64
+            gasLimit:
+              type: integer
+              format: uint64
+            gasUsed:
+              type: integer
+              format: uint64
+            baseFeePerGas:
+              type: integer
+              format: uint64
+            l1BlockNumber:
+              type: integer
+              description: L1 block number for L2 networks.
+          required:
+            - number
+            - height
+            - hash
+            - parentHash
+        transactions:
+          type: array
+          items:
+            type: object
+            properties:
+              transactionIndex:
+                type: integer
+                description: Index of the transaction in the block.
+              from:
+                type: string
+                description: Sender address (lowercase).
+              to:
+                type: string
+                description: Recipient address (lowercase).
+              hash:
+                type: string
+                description: Transaction hash.
+              gas:
+                type: integer
+                format: uint64
+              gasPrice:
+                type: integer
+                format: uint64
+              maxFeePerGas:
+                type: integer
+                format: uint64
+              maxPriorityFeePerGas:
+                type: integer
+                format: uint64
+              input:
+                type: string
+              nonce:
+                type: integer
+              value:
+                type: integer
+                format: uint64
+              v:
+                type: integer
+                format: uint64
+              r:
+                type: string
+              s:
+                type: string
+              yParity:
+                type: integer
+              chainId:
+                type: integer
+              gasUsed:
+                type: integer
+                format: uint64
+              cumulativeGasUsed:
+                type: integer
+                format: uint64
+              effectiveGasPrice:
+                type: integer
+                format: uint64
+              contractAddress:
+                type: string
+              type:
+                type: integer
+                description: Transaction type (e.g., 0 for legacy, 2 for EIP-1559).
+              status:
+                type: integer
+                description: Transaction status (1 for success, 0 for failure).
+              sighash:
+                type: string
+              l1Fee:
+                type: integer
+                format: uint64
+              l1FeeScalar:
+                type: number
+              l1GasPrice:
+                type: integer
+                format: uint64
+              l1GasUsed:
+                type: integer
+                format: uint64
+              l1BlobBaseFee:
+                type: integer
+                format: uint64
+              l1BlobBaseFeeScalar:
+                type: number
+              l1BaseFeeScalar:
+                type: number
+        logs:
+          type: array
+          items:
+            type: object
+            properties:
+              logIndex:
+                type: integer
+                description: Index of the log in the block.
+              transactionIndex:
+                type: integer
+                description: Index of the parent transaction.
+              address:
+                type: string
+                description: Contract address emitting the log (lowercase).
+              data:
+                type: string
+                description: Log data.
+              topics:
+                type: array
+                items:
+                  type: string
+                description: Log topics.
+              transactionHash:
+                type: string
+                description: Hash of the parent transaction.
+        traces:
+          type: array
+          items:
+            type: object
+            properties:
+              transactionIndex:
+                type: integer
+                description: Index of the parent transaction.
+              traceAddress:
+                type: array
+                items:
+                  type: integer
+                description: Address of the trace in the trace tree.
+              type:
+                type: string
+                enum: ["create", "call", "suicide", "reward"]
+                description: Type of trace.
+              subtraces:
+                type: integer
+                description: Number of subtraces.
+              error:
+                type: string
+                description: Error message, if any.
+              action:
+                type: object
+                properties:
+                  from:
+                    type: string
+                    description: Initiator address for create/call.
+                  value:
+                    type: integer
+                    format: uint64
+                    description: Value transferred.
+                  gas:
+                    type: integer
+                    format: uint64
+                    description: Gas provided.
+                  init:
+                    type: string
+                    description: Initialization code for create.
+                  to:
+                    type: string
+                    description: Recipient address for call.
+                  sighash:
+                    type: string
+                    description: Function signature hash for call.
+                  input:
+                    type: string
+                    description: Input data for call.
+                  address:
+                    type: string
+                    description: Contract address for suicide.
+                  refundAddress:
+                    type: string
+                    description: Refund address for suicide.
+                  balance:
+                    type: integer
+                    format: uint64
+                    description: Balance for suicide.
+                  author:
+                    type: string
+                    description: Reward recipient.
+                  rewardType:
+                    type: string
+                    description: Type of reward.
+              result:
+                type: object
+                properties:
+                  gasUsed:
+                    type: integer
+                    format: uint64
+                    description: Gas used by create/call.
+                  code:
+                    type: string
+                    description: Deployed code for create.
+                  address:
+                    type: string
+                    description: Created contract address.
+                  output:
+                    type: string
+                    description: Output data for call.
+        stateDiffs:
+          type: array
+          items:
+            type: object
+            properties:
+              transactionIndex:
+                type: integer
+                description: Index of the parent transaction.
+              address:
+                type: string
+                description: Contract or account address (lowercase).
+              key:
+                type: string
+                description: Storage key or special key (balance, code, nonce).
+              kind:
+                type: string
+                enum: ["=", "+", "*", "-"]
+                description: Type of state change.
+              prev:
+                type: string
+                description: Previous value.
+              next:
+                type: string
+                description: New value.
+      required:
+        - header
+    BlockHead:
+      type: object
+      properties:
+        number:
+          type: integer
+          format: int64
+          description: Block number of the highest available block.
+        hash:
+          type: string
+          description: Hash of the highest available block.
+      nullable: true
+    ConflictResponse:
+      type: object
+      properties:
+        previousBlocks:
+          type: array
+          items:
+            type: object
+            properties:
+              number:
+                type: integer
+                format: int64
+              hash:
+                type: string
+            required:
+              - number
+              - hash
+      required:
+        - previousBlocks
