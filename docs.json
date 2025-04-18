@@ -25,19 +25,19 @@
             ]
           },
           {
-            "group": "Examples",
+            "group": "Pipes",
             "pages": [
-              "examples/overview",
-              "examples/example-1",
-              "examples/example-2",
-              "examples/example-3"
+              "pipes/overview",
+              "pipes/example-1",
+              "pipes/example-2",
+              "pipes/example-3"
             ]
           },
           {
-            "group": "Learn More",
+            "group": "SQD SDK",
             "pages": [
-              "learn-more/page-1",
-              "learn-more/page-2"
+              "sqd-sdk/intro",
+              "sqd-sdk/example"
             ]
           }
         ]
