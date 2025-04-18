@@ -2,38 +2,38 @@
 title: "Introduction"
 ---
 
-Request the data you need by [POSTing to `/stream`](/api-reference/endpoint/post-stream) and you shall receive a stream of newline-separated JSON objects that package your data by block. For example
+Request the data you need by [POSTing to `/stream`](/api-reference-evm/endpoint/post-stream) and you shall receive a stream of newline-separated JSON objects that package your data by block. For example
 ```bash
-curl https://portal.sqd.dev/datasets/solana-beta/stream \
+curl https://portal.sqd.dev/datasets/ethereum-mainnet/stream \
   -X POST \
   -d '{
-    "type": "solana",
-    "fromBlock": 325000000,
-    "toBlock": 325000001,
+    "type": "evm",
+    "fromBlock": 16000000,
+    "toBlock": 16000001,
     "fields": {
       "block": {"number": true},
-      "instruction": {"data": true}
+      "log": {"data": true}
     },
-    "instructions": [
-      {"programId": [
-        "MoonCVVNZFSYkqNXP6bxHLPL6QQJiMagDL3qcqUQTrG"
+    "logs": [
+      {"address": [
+        "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599"
       ]}
     ]
   }'
 ```
 outputs
 ```jsonl
-{"header":{"number":325000000},"instructions":[{"data":"XJqfG9ATWCDLLmxbNnKxcQ6KRHveSXFyrM8JwmyievueP"}]}
-{"header":{"number":325000001}}
+{"header":{"number":16000000}}
+{"header":{"number":16000001},"logs":[{"data":"0x000000000000000000000000000000000000000000000000000000000000071e"}]}
 ```
-Here, we requested all records on instructions executed against the `MoonCVV...Trg` program, with a bare minimum of fields. One such record was found for block 325000000. There were no records of such instructions being executed in block 325000001, but the block was included anyway to indicate the range boundary.
+Here, we requested all records on logs emitted by the WBTC contract, with a bare minimum of fields. One such record was found for block 16000001. There were no records of such instructions being executed in block 16000000, but the block was included anyway to indicate the range boundary.
 
 By using this general approach, you can
- - Get data on instructions, transactions, logs, balance updates and rewards.
+ - Get data on logs, transactions, traces and storage state diffs.
  - Ensure that you only get the data you need by using a rich palette of filters.
- - Request data related to the data that matches your filters. In the example above we could request all transactions that contain matching instructions, or even all token balance updates caused by such transactions.
+ - Request data related to the data that matches your filters. In the example above we could request all transactions that contain matching logs, or even all traces of such transactions.
 
-Solana data is updated in real time and includes unfinalized blocks, enabling latencies of 1-2 s. Just omit the `toBlock` field in the request and you'll get the latest data.
+Data will be updated in real time and include unfinalized blocks, enabling latencies of 1-2 s. Just omit the `toBlock` field in the request and you'll get the latest data.
 
 ## Gotchas
 
@@ -58,7 +58,7 @@ This somewhat idealized picture omits some details:
 
    To be able to detect and correctly process orphan blocks the client must
 
-   **A.** Maintain a backlog of hash values for recent blocks (available at the `.header.hash` field; enable it by setting the `.fields.block.hash` field of the request to `true`). Backlog depth of ten blocks should suffice on Solana.
+   **A.** Maintain a backlog of hash values for recent blocks (available at the `.header.hash` field; enable it by setting the `.fields.block.hash` field of the request to `true`). Backlog depth of 80 blocks should suffice on Ethereum.
 
    **B.** Be ready to restart its business logic at any block in the backlog. This may involve state rollbacks.
 
@@ -88,14 +88,6 @@ This somewhat idealized picture omits some details:
    Once the client finds a non-orphaned block it should restart the business logic and resume the stream at its height.
 
    </Expandable>
-
-## Base URL
-
-For Solana use
-```
-https://portal.sqd.dev/datasets/solana-beta
-```
-Other SVM networks TBA.
 
 ## Other endpoints
 
