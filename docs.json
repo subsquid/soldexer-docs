@@ -65,28 +65,6 @@
         ]
       },
       {
-        "tab": "EVM API Reference",
-        "groups": [
-          {
-            "group": "Core API",
-            "pages": [
-              "api-reference-evm/introduction",
-              "api-reference-evm/endpoint/post-stream"
-            ]
-          },
-          {
-            "group": "Aux endpoints",
-            "pages": [
-              "api-reference-evm/endpoint/get-metadata",
-              "api-reference-evm/endpoint/get-head",
-              "api-reference-evm/endpoint/get-finalized-head",
-              "api-reference-evm/endpoint/post-finalized-stream",
-              "api-reference-evm/endpoint/get-state"
-            ]
-          }
-        ]
-      },
-      {
         "tab": "Changelog",
         "groups": [
           {
