@@ -35,9 +35,9 @@ By using this general approach, you can
 
 Solana data is updated in real time and includes unfinalized blocks, enabling latencies of 1-2 s. Just omit the `toBlock` field in the request and you'll get the latest data.
 
-## Gotchas
+## Making your own client
 
-This somewhat idealized picture omits some details:
+Real life protocols and infra introduce a couple of complications that you need to know about to actually build a client:
 
 1. The endpoint may terminate the stream of blocks at any point. To resume the stream the client must update the `fromBlock` and the optional `parentBlockHash` fields of its request and send the request to the API again.
 
@@ -88,6 +88,8 @@ This somewhat idealized picture omits some details:
    Once the client finds a non-orphaned block it should restart the business logic and resume the stream at its height.
 
    </Expandable>
+
+   Some of the shared code for [pipes](/pipes/overview) and the [Squid SDK](/sqd-sdk/intro) will deal with unfinalized blocks for you under the hood.
 
 ## Base URL
 
