@@ -3,7 +3,18 @@ title: "Intro"
 description: "The all-in-one solution for indexing Solana"
 ---
 
-[Pipes](/pipes/overview) are great when you need something you could add to an existing system, but sometimes an all-in-one, complete indexing solution is preferable. With SQD's TypeScript SDK you can make an indexer (a **squid**) that bundles:
+Aside from [pipes](/pipes/overview) you can also use [Squid SDK](https://docs.sqd.ai/sdk/) to access [Soldexer API](/api-reference/introduction). Here's the comparison:
+
+|      | Pipes | Squid SDK |
+|------|-------|-----------|
+| Mental model | Box of LEGO bricks | A framework |
+| Peripheral services (DB clients, GraphQL etc) | "Bring your own", occasionally borrowing from Squid SDK | Opinionated comprehensive support |
+| Real-time data handling, including unfinalized blocks | Yes | Yes |
+| Data transform update without resyncing | Yes | No |
+| Storing aggregations without the raw data (example: keeping a total DEx volume without keeping any temporally distributed data) | No | Yes |
+| Hosted service | Not yet | [Yes](https://docs.sqd.ai/cloud/) |
+
+Here are some features of bundled in the Squid SDK:
 
  - interfacing the [Soldexer API](/api-reference/introduction)
  - writing to a variety of data sinks (Postgres, BigQuery, Parquet/CSV/JSON/JSONL local or S3 files)
@@ -12,12 +23,13 @@ description: "The all-in-one solution for indexing Solana"
  - an option to serve a GraphQL API using PostGraphile, Hasura or a native SQD GraphQL server
  - an option to deploy to [SQD Cloud](https://app.subsquid.io) trusted by 100+ partners
 
-If that's something you'd like, then this section is for you.
+If that's something you'd like, then this section might be for you.
 
-## Architecture of squids
+## Squid SDK indexers' architecture
 
 Before you jump into action it's best to know a few key facts:
 
+0. In Squid SDK the indexers are called **squids**.
 1. The main component of any squid is its **processor** - a NodeJS process that ingests data from Soldexer or another compatible API, transforms it and stores it to a data sync.
 2. Processor fetches and processes data **in batches** of variable size. Each batch contains data for a range of blocks. The size of this range can be anywhere from one to several thousands of blocks. It is automatically determined by the SDK.
 3. When it's done processing a batch of data, the processor will send the results to one of its supported data sinks. All such write operations are normally **atomic / transactional**, meaning that if you terminate the indexer in the middle of processing a batch then all code executed on that batch up to that point will have no effect on the data sink.
