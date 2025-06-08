@@ -9,7 +9,7 @@
   },
   "favicon": "/soldexer-favicon.svg",
   "banner": {
-    "content": "🚀 Soldexer is in Open Beta! [Learn more](/changelog/soldexer-open-beta)",
+    "content": "🚀 Soldexer is in Open Beta!",
     "dismissible": true
   },
   "navigation": {
@@ -60,23 +60,6 @@
               "api-reference/endpoint/get-head",
               "api-reference/endpoint/get-finalized-head",
               "api-reference/endpoint/post-finalized-stream"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Changelog",
-        "groups": [
-          {
-            "group": "Changelog",
-            "pages": [
-              "changelog/latest-updates"
-            ]
-          },
-          {
-            "group": "Release Notes",
-            "pages": [
-              "changelog/soldexer-open-beta"
             ]
           }
         ]
