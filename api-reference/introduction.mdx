@@ -103,4 +103,3 @@ Other SVM networks TBA.
 * [GET /head](/api-reference/endpoint/get-head) - slot number and hash of the highest block of the dataset.
 * [GET /finalized-head](/api-reference/endpoint/get-finalized-head) - same, but only for finalized blocks. In the current implementation it will be behind `/head` by some thousands of slots.
 * [POST /finalized-stream](/api-reference/endpoint/post-finalized-stream) - same as the main endpoint [POST /stream](/api-reference/endpoint/post-stream), but will only return finalized blocks, up to the height you can get from [GET /finalized-head](/api-reference/endpoint/get-finalized-head)
-* [GET /state](/api-reference/endpoint/get-state) - information on how the dataset is distributed within the SQD Network.

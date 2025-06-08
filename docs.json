@@ -54,13 +54,12 @@
             ]
           },
           {
-            "group": "Aux endpoints",
+            "group": "Auxiliary endpoints",
             "pages": [
               "api-reference/endpoint/get-metadata",
               "api-reference/endpoint/get-head",
               "api-reference/endpoint/get-finalized-head",
-              "api-reference/endpoint/post-finalized-stream",
-              "api-reference/endpoint/get-state"
+              "api-reference/endpoint/post-finalized-stream"
             ]
           }
         ]

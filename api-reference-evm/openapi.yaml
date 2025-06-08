@@ -17,16 +17,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DatasetMetadata'
-  /state:
-    get:
-      description: Provides a summary of stored block ranges for the dataset. Useful for displaying network status.
-      responses:
-        '200':
-          description: Dataset state response with block ranges
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DatasetState'
   /stream:
     post:
       description: >
