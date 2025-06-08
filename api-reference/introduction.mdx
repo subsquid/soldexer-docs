@@ -4,7 +4,7 @@ title: "Introduction"
 
 Request the data you need by [POSTing to `/stream`](/api-reference/endpoint/post-stream) and you shall receive a stream of newline-separated JSON objects that package your data by block. For example
 ```bash
-curl https://portal.sqd.dev/datasets/solana-beta/stream \
+curl https://portal.sqd.dev/datasets/solana-mainnet/stream \
   -X POST \
   -d '{
     "type": "solana",
@@ -93,7 +93,7 @@ This somewhat idealized picture omits some details:
 
 For Solana use
 ```
-https://portal.sqd.dev/datasets/solana-beta
+https://portal.sqd.dev/datasets/solana-mainnet
 ```
 Other SVM networks TBA.
 
