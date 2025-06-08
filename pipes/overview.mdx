@@ -1,13 +1,183 @@
 ---
 title: "Overview"
-description: "Explore three end-to-end pipelines—from on-chain data to ClickHouse-ready insights"
+description: "Explore three end-to-end pipes — from on-chain data to ClickHouse-ready insights"
 ---
 
-## End-to-End Pipelines
+Pipes are flexible indexers that package [Soldexer API](/api-reference-introduction) data into [JS streams](https://developer.mozilla.org/en-US/docs/Web/API/Streams_API), pump them through stateless transforms such as decoding, save the results into an OLAP database and process them via [materialized views](https://en.wikipedia.org/wiki/Materialized_view).
 
-Test test test
+Currently pipes are an experimental technology, but it already demonstrated its advantages over the alternatives:
+ - **Simplicity:** data can be accessed with help of just a couple of libraries, no framework needed.
+ - **Code maintainability:** since all stateful data transforms (aggregations) are written in SQL, the code is vectorized by default. No boilerplate code related to batching is needed.
+ - **Performance:** the combination of stateless decoding + stateful transforms via highly optimized OLAP analytic engines such as [ClickHouse](https://clickhouse.com) ensures that both CPU and disk bandwidth are used efficiently.
 
-Explore these three end-to-end pipelines that demonstrate how to transform on-chain data into actionable insights.
+Pipes' architecture is best illustrated by the simple pipe you can find in [this repo](https://github.com/subsquid-labs/simple-pipe). It fetches all USDT balance updates, stores pre-transaction balances in a ClickHouse table then computes hourly averages via a materialized view. Here's [its main function](https://github.com/subsquid-labs/simple-pipe/blob/fdabc15395b93fab6a32f0a84681aac7c57b9870/src/main.ts#L79):
+```ts
+async function main() {
+  const clickhouse = createClickhouseClient();
+
+  // defining the pre-filtered raw data stream
+  const ds = /* ...will be explained below... */
+
+  // adding the necessary raw data table
+  // and the materialized view that computes hourly averages
+  await ensureTables(clickhouse, path.join(__dirname, 'transfers.sql'));
+
+  for await (const transfers of await ds.stream()) {
+    await clickhouse.insert({
+      table: 'transfers_raw',
+      values: transfers,
+      format: 'JSONEachRow',
+    });
+
+    await ds.ack();
+  }
+}
+```
+As you can see, it does little more than save the data to the database after insuring that the database is in the right state. SQL code responsible for that looks as follows:
+```sql src/transfers.sql
+CREATE TABLE IF NOT EXISTS transfers_raw
+(
+  timestamp           DateTime CODEC (DoubleDelta, ZSTD),
+  pre_balance         UInt256
+) ENGINE = MergeTree()
+ORDER BY (timestamp);
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS active_balance_stats
+ENGINE = AggregatingMergeTree()
+ORDER BY (timestamp)
+AS
+SELECT
+  toStartOfHour(timestamp) as timestamp,
+  avg(toFloat64(pre_balance) / 1e6) AS avg_active_wallet_balance
+FROM transfers_raw
+GROUP BY timestamp;
+```
+Note how the aggregation code is completely devoid of any boilerplate. Not only that, there's no need to resync on aggregation code changes - just updating the materialized view is enough.
+
+<Expandable tile title="instructions on updating the materialized view">
+
+Suppose you want to replace the average wallet balance at the start of the transaction with the max one. You can do so by dropping the `active_balance_stats` view and re-creating it with the new column:
+```sql
+DROP VIEW active_balance_stats;
+CREATE MATERIALIZED VIEW IF NOT EXISTS active_balance_stats
+ENGINE = AggregatingMergeTree()
+ORDER BY (timestamp)
+POPULATE
+AS
+SELECT
+  toStartOfHour(timestamp) as timestamp,
+  max(toFloat64(pre_balance) / 1e6) AS max_active_wallet_balance
+FROM transfers_raw
+GROUP BY timestamp;
+```
+Note the `POPULATE` clause in the view definition - it tells ClickHouse that the materialized view should be populated with the data that's already available in the `transfers_raw` table, not just with the newly arriving data.
+
+After updating the view in the database you should also update it in the initial database state definition file. No `POPULATE` clause is necessary there:
+```sql src/transfers.sql
+...
+
+CREATE MATERIALIZED VIEW IF NOT EXISTS active_balance_stats
+ENGINE = AggregatingMergeTree()
+ORDER BY (timestamp)
+AS
+SELECT
+  toStartOfHour(timestamp) as timestamp,
+  max(toFloat64(pre_balance) / 1e6) AS max_active_wallet_balance
+FROM transfers_raw
+GROUP BY timestamp;
+```
+
+</Expandable>
+
+This level of simplicity is enabled by the data stream object `ds` abstracting away the details of data retrieval and transformation. Its definition is somewhat long but straightforward.
+
+<Expandable title="full code">
+```ts
+type TransferPreBalance = {
+  timestamp: Date;
+  pre_balance: bigint;
+};
+
+export class TransferPreBalancesStream extends PortalAbstractStream<
+  TransferPreBalance,
+  { token: string; }
+> {
+  async stream(): Promise<ReadableStream<TransferPreBalance[]>> {
+    // First, we request a stream of raw data from SQD network
+    const source = await this.getStream({
+      type: 'solana',
+      fields: {
+        block: {
+          // Although we're only using timestamp in the final data,
+          // we also need slot number and block hash for progress tracking
+          number: true,
+          hash: true,
+          timestamp: true,
+        },
+        tokenBalance: {
+          preAmount: true,
+        },
+      },
+      tokenBalances: [
+        {
+          preMint: [ this.options.args.token ]
+        }
+      ]
+    });
+
+    // Transforming the raw data stream into a stream
+    // of convenient TransferPreBalance objects. If we needed
+    // to do any decoding we would do it here
+    const stream = source.pipeThrough(
+      new TransformStream({
+        transform: ({ blocks }, controller) => {
+          const res = blocks.flatMap((block: any) => {
+            if (!block.tokenBalances) return [];
+
+            const blockTimestamp = new Date(block.header.timestamp * 1000);
+
+            return block.tokenBalances.map((tb) => ({
+              timestamp: blockTimestamp,
+              pre_balance: tb.preAmount,
+            }));
+          });
+
+          controller.enqueue(res);
+        },
+      }),
+    );
+
+    return stream;
+  }
+}
+
+...
+  const ds = new TransferPreBalancesStream({
+    portal: 'https://portal.sqd.dev/datasets/solana-mainnet',
+    blockRange: {
+      from: 317617480, // Jan 31 2025
+      // Check out
+      // $ curl https://portal.sqd.dev/datasets/solana-mainnet/metadata
+      // for up-to-date info on the earliest available block
+    },
+    args: {
+      token: TRACKED_TOKEN,
+    },
+    // We use the indexer state to track the last block processed
+    // and resume from there
+    state: new ClickhouseState(clickhouse, {
+      table: 'solana_sync_status',
+      id: 'transfers',
+    }),
+    logger: createLogger('transfers'),
+  });
+...
+```
+</Expandable>
+
+Eventually we will have a library of reusable components such as the `TransferPreBalancesStream` class that implements common raw data processing subtasks (such as fetching and decoding all DEx swaps from major Solana exchanges).
+
+And that's it for the pipes' architecture explanation! You can now explore these three end-to-end pipelines with more real world utility than this little demo.
 
 <CardGroup cols={3}>
   <Card title="Swaps on Solana" icon="arrows-rotate" href="/examples/example-1">
