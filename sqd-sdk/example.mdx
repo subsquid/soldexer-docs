@@ -3,7 +3,7 @@ title: "Example"
 description: "A simple squid processor indexing Orca"
 ---
 
-In this tutorial we look into an SQD SDK indexer (a _squid_) that gets data about the [Orca Exchange](https://www.orca.so/) NFTs, their transfers and owners from Solana.
+Here we look into an Squid SDK indexer (a _squid_) that gets the data about [Orca Exchange](https://www.orca.so/) NFTs, their transfers and owners.
 
 Pre-requisites: Node.js **v20 or newer**, Git, Docker.
 
@@ -64,14 +64,14 @@ Here, `d8` are the eight bytes that the relevant instruction data starts with. I
 
 "Data source" is a component that defines what data should be retrieved and where to get it. Here's how we configure it to retrieve the `swap` instruction data of the Whirlpool program:
 
-```typescript title="src/main.ts"
+```typescript src/main.ts
 // ...
 import {DataSourceBuilder} from '@subsquid/solana-stream'
 import * as whirlpool from './abi/whirpool'
 
 const dataSource = new DataSourceBuilder()
   // An SQD Network Portal URL is required
-  .setPortal('https://portal.sqd.dev/datasets/solana-beta')
+  .setPortal('https://portal.sqd.dev/datasets/solana-mainnet')
   .setBlockRange({from: 300_000_000})
   .addInstruction({
     // Select instructions that
@@ -126,7 +126,7 @@ const dataSource = new DataSourceBuilder()
 
 Here,
 
-* `'https://portal.sqd.dev/datasets/solana-beta'` is the address of the public SQD Network portal for Solana mainnet.
+* `'https://portal.sqd.dev/datasets/solana-mainnet'` is the address of the public SQD Network portal for Solana mainnet.
 
 * `300_000_000` is first Solana slot to be indexed by the processor.
 
@@ -156,7 +156,7 @@ Here,
 
 And here is how this call looks in our Whirlpool data processor:
 
-```typescript title="src/main.ts"
+```typescript src/main.ts
 import {run} from '@subsquid/batch-processor'
 import {augmentBlock} from '@subsquid/solana-objects'
 import {DataSourceBuilder, SolanaRpcClient} from '@subsquid/solana-stream'
@@ -241,4 +241,4 @@ You can verify that the data is being stored in the database by running
 ```bash
 docker exec "$(basename "$(pwd)")-db-1" psql -U postgres -c "SELECT * FROM exchange"
 ```
-The full code can be found [here](https://github.com/subsquid-labs/solana-example).
+The full code can be found [here](https://github.com/subsquid-labs/solana-example/tree/portal-api).
