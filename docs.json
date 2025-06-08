@@ -37,7 +37,8 @@
             "group": "SQD SDK",
             "pages": [
               "sqd-sdk/intro",
-              "sqd-sdk/example"
+              "sqd-sdk/example",
+              "sqd-sdk/guide"
             ]
           }
         ]
