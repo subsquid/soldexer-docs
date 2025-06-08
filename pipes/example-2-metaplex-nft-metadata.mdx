@@ -1,0 +1,11 @@
+---
+title: "Metaplex NFT metadata"
+description: "Stream metadata from Metaplex mints and store it in ClickHouse"
+---
+
+This pipe grabs the on-chain NFT metadata created using [Metaplex](https://www.metaplex.com). To achieve this it decodes the `createMetadataAccount*` instruction of the [Metaplex program](https://solana.fm/address/metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s/transactions?cluster=mainnet-alpha). Some daily stats are computed on top of that.
+
+The pipe is a part of the [`sqd-pipes` repo](https://github.com/subsquid-labs/sqd-pipes). Here are the source code links:
+ - [main function of the ingester](https://github.com/subsquid-labs/sqd-pipes/blob/main/packages/soldexer-pipes/src/indexers/metaplex.ts)
+ - [data stream definition](https://github.com/subsquid-labs/sqd-pipes/blob/main/packages/streams/src/streams/svm/metaplex/metaplex-stream.ts)
+ - [SQL definition of the raw data table and the stats materialized view](https://github.com/subsquid-labs/sqd-pipes/blob/main/packages/soldexer-pipes/db/sql/metaplex.sql)

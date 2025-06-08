@@ -28,9 +28,9 @@
             "group": "Pipes",
             "pages": [
               "pipes/overview",
-              "pipes/example-1",
-              "pipes/example-2",
-              "pipes/example-3"
+              "pipes/example-1-dex-swaps",
+              "pipes/example-2-metaplex-nft-metadata",
+              "pipes/example-3-pumpfun-tokens"
             ]
           },
           {

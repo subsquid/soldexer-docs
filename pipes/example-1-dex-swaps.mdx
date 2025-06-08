@@ -1,0 +1,19 @@
+---
+title: "Swaps on Solana"
+description: "Track swap activity across Solana DEXs and write OHLCV data to ClickHouse"
+---
+
+This pipe is tracking swaps across the following popular exchanges:
+
+ - Orca
+ - Meteora
+ - Raydium (both concentrated and constant product pools)
+
+The swaps data is aggregated into 5m candles and some pool stats.
+
+The pipe is a part of the [`sqd-pipes` repo](https://github.com/subsquid-labs/sqd-pipes). Here are the source code links:
+ - [main function of the ingester](https://github.com/subsquid-labs/sqd-pipes/blob/main/packages/soldexer-pipes/src/indexers/swaps.ts)
+ - [data stream definition](https://github.com/subsquid-labs/sqd-pipes/blob/main/packages/streams/src/streams/svm/swaps/solana-swap-stream.ts)
+ - [SQL definition of the raw data table and aggregations](https://github.com/subsquid-labs/sqd-pipes/blob/main/packages/soldexer-pipes/db/sql/swaps.sql)
+
+Also available from the [standalone `soldexer` repo](https://github.com/subsquid-labs/soldexer/).
