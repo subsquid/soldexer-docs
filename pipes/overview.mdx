@@ -104,6 +104,9 @@ export class TransferPreBalancesStream extends PortalAbstractStream<
 > {
   async stream(): Promise<ReadableStream<TransferPreBalance[]>> {
     // First, we request a stream of raw data from SQD network
+    // Structure of the getStream argument mirrors that of
+    // the raw Soldexer API JSON request, see
+    // https://docs.soldexer.dev/api-reference/endpoint/post-stream
     const source = await this.getStream({
       type: 'solana',
       fields: {
@@ -187,12 +190,12 @@ And that's it for the pipes' architecture explanation! You can now explore these
     and write 5-minute OHLCV data directly to ClickHouse for fast, reliable
     analysis.
   </Card>
-  <Card title="Metaplex NFT metadata" icon="image" href="/pipes/example-2-metaplex-nft-metadata">
+  <Card title="COMING SOON: Metaplex NFT metadata" icon="image">
     Stream metadata from Metaplex mints—including names, symbols, URIs, and
     accounts—and store it in ClickHouse, ready for efficient indexing and
     lookup.
   </Card>
-  <Card title="pump.fun tokens" icon="rocket" href="/pipes/example-3-pumpfun-tokens">
+  <Card title="COMING SOON: pump.fun tokens" icon="rocket" href="/pipes/example-3-pumpfun-tokens">
     Track token launches on pump.fun in real time—capture names, symbols, and
     mints as they're created, and monitor on-chain activity from the start.
   </Card>
