@@ -9,7 +9,7 @@
   },
   "favicon": "/soldexer-favicon.svg",
   "banner": {
-    "content": "🚀 Soldexer is in Open Beta!",
+    "content": "🐉 Soldexer is in Open Beta!",
     "dismissible": true
   },
   "navigation": {
@@ -135,7 +135,7 @@
           },
           {
             "label": "Blog",
-            "href": "https://sqd.dev/blog"
+            "href": "https://blog.sqd.dev"
           }
         ]
       },
