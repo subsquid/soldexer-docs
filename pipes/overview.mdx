@@ -104,6 +104,9 @@ export class TransferPreBalancesStream extends PortalAbstractStream<
 > {
   async stream(): Promise<ReadableStream<TransferPreBalance[]>> {
     // First, we request a stream of raw data from SQD network
+    // Structure of the getStream argument mirrors that of
+    // the raw Soldexer API JSON request, see
+    // https://docs.soldexer.dev/api-reference/endpoint/post-stream
     const source = await this.getStream({
       type: 'solana',
       fields: {
