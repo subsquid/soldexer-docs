@@ -804,30 +804,6 @@ components:
                 type: string
               hasDroppedLogMessages:
                 type: boolean
-        logs:
-          type: array
-          items:
-            type: object
-            properties:
-              transactionIndex:
-                type: integer
-              logIndex:
-                type: integer
-              instructionAddress:
-                description: Address of the instruction that produced the log. See the instruction field description for details (HTTP 200 response description -> instructions -> instructionAddress)
-                type: array
-                items:
-                  type: integer
-              programId:
-                type: string
-              kind:
-                type: string
-                enum:
-                  - log
-                  - data
-                  - other
-              message:
-                type: string
         balances:
           type: array
           items:
@@ -885,6 +861,32 @@ components:
                 type: string
               commission:
                 type: integer
+        logs:
+          type: array
+          description: >
+            Read https://docs.soldexer.dev/api-reference/data-notes/logs-truncation before attempting to use logs
+          items:
+            type: object
+            properties:
+              transactionIndex:
+                type: integer
+              logIndex:
+                type: integer
+              instructionAddress:
+                description: Address of the instruction that produced the log. See the instruction field description for details (HTTP 200 response description -> instructions -> instructionAddress)
+                type: array
+                items:
+                  type: integer
+              programId:
+                type: string
+              kind:
+                type: string
+                enum:
+                  - log
+                  - data
+                  - other
+              message:
+                type: string
       required:
         - header
     BlockHead:
