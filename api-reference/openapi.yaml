@@ -371,7 +371,7 @@ components:
                   type: boolean
             balance:
               type: object
-              description: Field selector for native token balance updates
+              description: Field selector for SOL balance updates
               properties:
                 transactionIndex:
                   type: boolean
@@ -553,7 +553,7 @@ components:
                 description: Fetch parent transactions for all matching instructions
                 type: boolean
               transactionBalances:
-                description: Fetch native token balance updates caused by parent transactions of all matching instructions
+                description: Fetch SOL balance updates caused by parent transactions of all matching instructions
                 type: boolean
               transactionTokenBalances:
                 description: Fetch token balance updates caused by parent transactions of all matching instructions
@@ -585,7 +585,7 @@ components:
                 description: Fetch all instructions executed in the matching transactions
                 type: boolean
               balances:
-                description: Fetch all native token balance updates due to the matching transactions
+                description: Fetch all SOL balance updates due to the matching transactions
                 type: boolean
               tokenBalances:
                 description: Fetch all token balance updates due to the matching transactions
@@ -595,7 +595,7 @@ components:
                 type: boolean
         balances:
           type: array
-          description: Requests for native token balance updates
+          description: Requests for SOL balance updates
           items:
             type: object
             properties:
@@ -806,6 +806,8 @@ components:
                 type: boolean
         balances:
           type: array
+          description: >
+            Records of SOL balance updates done per transaction and account. Combines pre- and post-balance records, making one record per account
           items:
             type: object
             properties:
@@ -819,16 +821,21 @@ components:
                 type: integer
         tokenBalances:
           type: array
+          description: >
+            Records of token balance updates done per transaction and token account. Uses data from https://solana.com/docs/rpc/json-structures#token-balances but combines pre- and post-balance records, making one record per token account
           items:
             type: object
             properties:
               transactionIndex:
                 type: integer
               account:
+                description: The token account
                 type: string
               preMint:
+                description: The token mint account. Coincides with postMint when both are defined
                 type: string
               postMint:
+                description: The token mint account. Coincides with preMint when both are defined
                 type: string
               preDecimals:
                 type: integer
@@ -839,8 +846,10 @@ components:
               postProgramId:
                 type: string
               preOwner:
+                description: The owner of the token account at the start of the transaction
                 type: string
               postOwner:
+                description: The owner of the token account at the end of the transaction. When both pre- and postOwner are defined they can only be different if the transaction has changed the token account owner via the SetAuthority instruction
                 type: string
               preAmount:
                 type: integer
