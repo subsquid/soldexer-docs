@@ -321,7 +321,7 @@ components:
                   type: boolean
             transaction:
               type: object
-              description: Field selector for transaction
+              description: Field selector for transactions
               properties:
                 transactionIndex:
                   type: boolean
@@ -445,7 +445,7 @@ components:
           default:
             - programId:
               - dRiftyHA39MWEi3m9aunc5MzRF1JYuBsbn6VPcn33UH
-          description: Instruction data requests. Selects instructions found anywhere in the call tree, not just top level ones. d1-d8 filter by the starting bytes of the data (in 0x-prefixed hex format); a0-a15 filter by account at the corresponding position in the accounts array; mentionsAccount filters by account mentions anywhere in the list
+          description: Instruction data requests. Selects instructions found anywhere in the call tree, not just the top level ones. d1-d8 filter by the starting bytes of the data (in 0x-prefixed hex format); a0-a15 filter by account at the corresponding position in the accounts array; mentionsAccount filters by account mentions anywhere in the list
           items:
             type: object
             properties:
@@ -565,7 +565,7 @@ components:
                 description: Fetch all instructions called by matching instructions (entire subtrees, not just the ones called directly)
                 type: boolean
               logs:
-                description: Fetch logs produced by matching instructions
+                description: Fetch logs produced by matching instructions. Read https://docs.soldexer.dev/api-reference/data-notes/logs-truncation before attempting to use logs
                 type: boolean
         transactions:
           type: array
@@ -584,35 +584,14 @@ components:
               instructions:
                 description: Fetch all instructions executed in the matching transactions
                 type: boolean
-              logs:
-                description: Fetch all logs produced by the matching transactions
-                type: boolean
               balances:
                 description: Fetch all native token balance updates due to the matching transactions
                 type: boolean
               tokenBalances:
                 description: Fetch all token balance updates due to the matching transactions
                 type: boolean
-        logs:
-          type: array
-          description: Logs data requests
-          items:
-            type: object
-            properties:
-              programId:
-                type: array
-                items:
-                  type: string
-              kind:
-                type: array
-                items:
-                  type: string
-                  enum: ['log', 'data', 'other']
-              instruction:
-                description: Fetch parent instructions for all matching logs
-                type: boolean
-              transaction:
-                description: Fetch parent transactions for all matching logs
+              logs:
+                description: Fetch all logs produced by the matching transactions. Read https://docs.soldexer.dev/api-reference/data-notes/logs-truncation before attempting to use logs
                 type: boolean
         balances:
           type: array
@@ -680,6 +659,28 @@ components:
                 type: array
                 items:
                   type: string
+        logs:
+          type: array
+          description: >
+            Logs data requests. Read https://docs.soldexer.dev/api-reference/data-notes/logs-truncation before attempting to use logs
+          items:
+            type: object
+            properties:
+              programId:
+                type: array
+                items:
+                  type: string
+              kind:
+                type: array
+                items:
+                  type: string
+                  enum: ['log', 'data', 'other']
+              instruction:
+                description: Fetch parent instructions for all matching logs
+                type: boolean
+              transaction:
+                description: Fetch parent transactions for all matching logs
+                type: boolean
       required:
         - fromBlock
     Block:

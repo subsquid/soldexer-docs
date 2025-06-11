@@ -59,6 +59,12 @@
               "api-reference/endpoint/get-finalized-head",
               "api-reference/endpoint/post-finalized-stream"
             ]
+          },
+          {
+            "group": "Data notes",
+            "pages": [
+              "api-reference/data-notes/logs-truncation"
+            ]
           }
         ]
       },

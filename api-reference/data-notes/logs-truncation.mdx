@@ -1,0 +1,31 @@
+---
+title: "On truncation of logs"
+description: "Important information for users of Solana program logs data"
+---
+
+Solana programs output logs as they run. You can obtain these from:
+
+ - Soldexer API's [`logs` data request](/api-reference/endpoint/post-stream#body-logs)
+ - other Soldexer API's data requests as related data (e.g. when [requesting transactions with `"logs": true`](/api-reference/endpoint/post-stream#body-transactions-logs))
+ - from Solana RPCs via the [`logsSubscribe` method](https://solana.com/docs/rpc/websocket/logssubscribe)
+
+and other sources.
+
+This data has a limitation that all users of this data must be aware of: **logs are truncated if their total size per transaction exceeds 10kb**.
+
+<Expandable title="details">
+
+More precisely, Solana runtime tracks the number of bytes as it outputs the log line by line. As soon as the number exceeds 10000 it outputs the final line reading `Log truncated` and stops the log writing operation. The only way to get around this limitation is to patch the runtime.
+
+Here's the code that does that in common Solana node implementations: [modern](https://github.com/anza-xyz/agave/blob/31a17ed5ce73de2f1050392aeadeb1fd2b12424a/log-collector/src/lib.rs#L31-L40), [historical](https://github.com/solana-labs/solana/blob/7700cb3128c1f19820de67b81aa45d18f73d2ac0/program-runtime/src/log_collector.rs#L31-L40). Example of a transaction affected by the truncation (scroll to the very bottom in all explorers):
+ - [SolanaBeach](https://solanabeach.io/transaction/22qXg6rNq4ePwYMi7WY6bN6bKtzvCrU3upkJFv34y17dFWMuDQTDyKqiLuuYU378krkoAu1kmvuersxe5ZcAtSK7) shows the raw program log and there's a "Log truncated" line at the end.
+ - [explorer.solana.com](https://explorer.solana.com/tx/22qXg6rNq4ePwYMi7WY6bN6bKtzvCrU3upkJFv34y17dFWMuDQTDyKqiLuuYU378krkoAu1kmvuersxe5ZcAtSK7) omits logs from instructions 15-18 in the parsed log.
+ - [solana.fm](https://solana.fm/tx/22qXg6rNq4ePwYMi7WY6bN6bKtzvCrU3upkJFv34y17dFWMuDQTDyKqiLuuYU378krkoAu1kmvuersxe5ZcAtSK7?cluster=mainnet-alpha) shows logs of all instructions, strongly suggesting that they use a patched node for their data.
+
+Soldexer uses data from a regular non-patched Solana node, so some logs in its dataset are truncated.
+
+</Expandable>
+
+The practical consequence on this is that data consumers cannot be fully certain that they will always receive a log message whenever the relevant program code is executed. Whether or not this is acceptable depends on how the data is used.
+
+To avoid having to deal with this issue we recommend using [instructions](/api-reference/endpoint/post-stream#body-instructions) and [token balance updates](/api-reference/endpoint/post-stream#body-token-balances) in place of logs whenever possible. Anchor developed [a special type of no-op instructions](https://www.anchor-lang.com/docs/features/events#emit_cpi) that can be used to mark execution events reliably, similar to how event logs work on EVM. If you program emits these, use them instead of execution logs.
