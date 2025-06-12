@@ -6,12 +6,14 @@ description: "Track swap activity across Solana DEXs and write OHLCV data to Cli
 This pipe is tracking swaps across the following popular exchanges:
 
  - Orca
- - Meteora
- - Raydium (both concentrated and constant product pools)
+ - Meteora (DLMM and DAMM pools)
+ - Raydium (concentrated and constant product pools)
 
-It is available from the [`soldexer` repo](https://github.com/subsquid-labs/soldexer/). Here are the source code links:
- - [main function of the ingester](https://github.com/subsquid-labs/soldexer/blob/main/src/main.ts)
- - [data stream definition](https://github.com/subsquid-labs/soldexer/blob/main/src/streams/solana_swaps/solana_swaps.ts)
- - [SQL definition of the raw data table](https://github.com/subsquid-labs/soldexer/blob/main/src/swaps.sql)
+It is a part of the [`soldexer` repo](https://github.com/subsquid-labs/soldexer). Here are some source code links:
+ - [main function of the ingester](https://github.com/subsquid-labs/soldexer/blob/main/src/indexers/swaps.ts)
+ - [data stream definition](https://github.com/subsquid-labs/soldexer/blob/main/src/streams/swaps/index.ts)
+ - [SQL definition of the raw data table](https://github.com/subsquid-labs/soldexer/blob/main/src/db/sql/swaps.sql)
 
 The pipe currently does no data aggregations. Take a look at the [database state definition of `simple-pipe`](https://github.com/subsquid-labs/simple-pipe/blob/master/src/transfers.sql) if you want an example of that.
+
+[Instructions for running locally](https://github.com/subsquid-labs/soldexer/tree/main?tab=readme-ov-file#getting-started)
