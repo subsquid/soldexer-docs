@@ -7,10 +7,10 @@ Pipes are flexible indexers that package [Soldexer API](/api-reference-introduct
 
 Currently pipes are an experimental technology, but it already demonstrated its advantages over the alternatives:
  - **Simplicity:** data can be accessed with help of just a couple of libraries, no framework needed.
- - **Code maintainability:** since all stateful data transforms (aggregations) are written in SQL, the code is vectorized by default. No boilerplate code related to batching is needed.
+ - **Code maintainability:** since all stateful data transforms (aggregations) are written in SQL, the code is vectorized by default. No boilerplate batching code is needed.
  - **Performance:** the combination of stateless decoding + stateful transforms via highly optimized OLAP analytic engines such as [ClickHouse](https://clickhouse.com) ensures that both CPU and disk bandwidth are used efficiently.
 
-Pipes' architecture is best illustrated by the simple pipe you can find in [this repo](https://github.com/subsquid-labs/simple-pipe). It fetches all USDT balance updates, stores pre-transaction balances in a ClickHouse table then computes hourly averages via a materialized view. Here's [its main function](https://github.com/subsquid-labs/simple-pipe/blob/fdabc15395b93fab6a32f0a84681aac7c57b9870/src/main.ts#L79):
+Pipes' architecture is best illustrated by the simple pipe you can find in [this repo](https://github.com/subsquid-labs/simple-pipe). It fetches all USDT balance updates, stores pre-transaction balances in a ClickHouse table then computes hourly averages via a materialized view. Here's [its main function](https://github.com/subsquid-labs/simple-pipe/blob/bec33fa9086081b3cb2c82c1682a790b03a621a3/src/main.ts#L82-L118):
 ```ts
 async function main() {
   const clickhouse = createClickhouseClient();
@@ -98,7 +98,8 @@ type TransferPreBalance = {
   pre_balance: bigint;
 };
 
-export class TransferPreBalancesStream extends PortalAbstractStream<
+// A stream with just the data we need
+class TransferPreBalancesStream extends PortalAbstractStream<
   TransferPreBalance,
   { token: string; }
 > {
@@ -160,7 +161,7 @@ export class TransferPreBalancesStream extends PortalAbstractStream<
     blockRange: {
       from: 317617480, // Jan 31 2025
       // Check out
-      // $ curl https://portal.sqd.dev/datasets/solana-mainnet/metadata
+      // https://portal.sqd.dev/datasets/solana-mainnet/metadata
       // for up-to-date info on the earliest available block
     },
     args: {
