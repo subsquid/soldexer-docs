@@ -40,6 +40,12 @@
               "sqd-sdk/example",
               "sqd-sdk/guide"
             ]
+          },
+          {
+            "group": "External tools",
+            "pages": [
+              "external-tools/cherry"
+            ]
           }
         ]
       },
