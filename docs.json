@@ -118,7 +118,7 @@
   "footer": {
     "socials": {
       "x": "https://x.com/soldexer_dev",
-      "github": "https://github.com/subsquid/squid-sdk"
+      "github": "https://github.com/subsquid-labs/soldexer"
     },
     "links": [
       {
@@ -150,19 +150,6 @@
             "href": "https://blog.sqd.dev"
           }
         ]
-      },
-      {
-        "header": "Legal",
-        "items": [
-          {
-            "label": "Privacy Policy",
-            "href": "https://soldexer.dev/privacy"
-          },
-          {
-            "label": "Terms of Service",
-            "href": "https://soldexer.dev/terms"
-          }
-        ]
       }
     ]
   },
@@ -185,7 +172,7 @@
     {
       "name": "GitHub",
       "icon": "github",
-      "url": "https://github.com/subsquid/soldexer"
+      "url": "https://github.com/subsquid-labs/soldexer"
     }
   ]
 }
