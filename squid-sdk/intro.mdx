@@ -3,18 +3,7 @@ title: "Intro"
 description: "The all-in-one solution for indexing Solana"
 ---
 
-Aside from [pipes](/pipes/overview) you can also use [Squid SDK](https://docs.sqd.ai/sdk/) to access [Soldexer API](/api-reference/introduction). Here's the comparison:
-
-|      | Pipes | Squid SDK |
-|------|-------|-----------|
-| Mental model | Box of LEGO bricks | A framework |
-| Peripheral services (DB clients, GraphQL etc) | "Bring your own", occasionally borrowing from Squid SDK | Opinionated comprehensive support |
-| Real-time data handling | Yes | Yes |
-| Data transform update without resyncing | Yes | No |
-| Storing aggregations without the raw data (example: keeping a total DEx volume without keeping any temporally distributed data) | No | Yes |
-| Hosted service | Not yet | [Yes](https://docs.sqd.ai/cloud/) |
-
-Here are some features of bundled in the Squid SDK:
+Aside from [pipes](/pipes/overview) you can also use [Squid SDK](https://docs.sqd.ai/sdk/) to access [Soldexer API](/api-reference/introduction). Here are some features bundled in the Squid SDK:
 
  - interfacing the [Soldexer API](/api-reference/introduction)
  - writing to a variety of data sinks (Postgres, BigQuery, Parquet/CSV/JSON/JSONL local or S3 files)
