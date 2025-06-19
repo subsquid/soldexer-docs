@@ -34,11 +34,11 @@
             ]
           },
           {
-            "group": "SQD SDK",
+            "group": "Squid SDK",
             "pages": [
-              "sqd-sdk/intro",
-              "sqd-sdk/example",
-              "sqd-sdk/guide"
+              "squid-sdk/intro",
+              "squid-sdk/example",
+              "squid-sdk/guide"
             ]
           },
           {
