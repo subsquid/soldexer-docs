@@ -21,8 +21,8 @@
             "group": "Get Started",
             "pages": [
               "get-started/introduction",
-              "get-started/faq",
-              "get-started/choose-your-approach"
+              "get-started/choose-your-approach",
+              "get-started/faq"
             ]
           },
           {
