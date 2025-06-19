@@ -11,5 +11,5 @@ Aside from [pipes](/pipes/overview) you can also use [Squid SDK](/squid-sdk/intr
 | Peripheral services (DB clients, GraphQL etc) | "Bring your own", occasionally borrowing from Squid SDK | Opinionated comprehensive support |
 | Real-time data handling | Yes | Yes |
 | Data transform update without resyncing | Yes | No |
-| Storing aggregations without the raw data (example: keeping a total DEx volume without keeping any temporally distributed data) | No | Yes |
+| Storing aggregations without the raw data (example: keeping a total DEx volume without keeping any temporally distributed data) | Yes, with partial loss of ability to update the transform | Yes |
 | Hosted service | Not yet | [Yes](https://docs.sqd.ai/cloud/) |
