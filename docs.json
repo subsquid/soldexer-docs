@@ -175,5 +175,10 @@
       "icon": "github",
       "url": "https://github.com/subsquid-labs/soldexer"
     }
-  ]
+  ],
+  "integrations": {
+    "plausible": {
+      "domain": "docs.soldexer.dev"
+    }
+  }
 }
