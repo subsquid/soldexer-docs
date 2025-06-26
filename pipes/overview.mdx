@@ -48,17 +48,19 @@ ORDER BY (timestamp)
 AS
 SELECT
   toStartOfHour(timestamp) as timestamp,
-  avg(toFloat64(pre_balance) / 1e6) AS avg_active_wallet_balance
+  avgState(toFloat64(pre_balance) / 1e6) AS avg_active_wallet_balance
 FROM transfers_raw
 GROUP BY timestamp;
 ```
-Note how the aggregation code is completely devoid of any boilerplate. Not only that, there's no need to resync on aggregation code changes - just updating the materialized view is enough.
+Note how the aggregation code is almost devoid of boilerplate. Not only that, there's no need to resync on aggregation code changes - just updating the materialized view is enough.
 
 <Expandable tile title="instructions on updating the materialized view">
 
 Suppose you want to replace the average wallet balance at the start of the transaction with the max one. You can do so by dropping the `active_balance_stats` view and re-creating it with the new column:
 ```sql
 DROP VIEW active_balance_stats;
+```
+```sql
 CREATE MATERIALIZED VIEW IF NOT EXISTS active_balance_stats
 ENGINE = AggregatingMergeTree()
 ORDER BY (timestamp)
@@ -66,11 +68,16 @@ POPULATE
 AS
 SELECT
   toStartOfHour(timestamp) as timestamp,
-  max(toFloat64(pre_balance) / 1e6) AS max_active_wallet_balance
+  maxState(toFloat64(pre_balance) / 1e6) AS max_active_wallet_balance
 FROM transfers_raw
 GROUP BY timestamp;
 ```
 Note the `POPULATE` clause in the view definition - it tells ClickHouse that the materialized view should be populated with the data that's already available in the `transfers_raw` table, not just with the newly arriving data.
+
+You can now query the materialized view with
+```sql
+select timestamp, maxMerge(max_active_wallet_balance) from active_balance_stats group by timestamp;
+```
 
 After updating the view in the database you should also update it in the initial database state definition file. No `POPULATE` clause is necessary there:
 ```sql src/transfers.sql
@@ -82,10 +89,12 @@ ORDER BY (timestamp)
 AS
 SELECT
   toStartOfHour(timestamp) as timestamp,
-  max(toFloat64(pre_balance) / 1e6) AS max_active_wallet_balance
+  maxState(toFloat64(pre_balance) / 1e6) AS max_active_wallet_balance
 FROM transfers_raw
 GROUP BY timestamp;
 ```
+
+See [Clickhouse documentation on incremental materialized views](https://clickhouse.com/docs/materialized-view/incremental-materialized-view) to learn more.
 
 </Expandable>
 
