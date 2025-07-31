@@ -5,17 +5,17 @@ description: "The three ways to consume the Soldexer API"
 
 There are three ways to consume the Soldexer API:
 
-- with [pipes](/pipes/overview),
+- with [Pipes](/pipes/overview),
 - with [Squid SDK](/squid-sdk/intro) or
 - with your own custom client ([API Reference](/api-reference/introduction)).
 
 Here's the comparison between the first two architectures:
 
-|      | Pipes | Squid SDK |
-|------|-------|-----------|
-| Mental model | Box of LEGO bricks | A framework |
-| Peripheral services (DB clients, GraphQL etc) | "Bring your own", occasionally borrowing from Squid SDK | Opinionated comprehensive support |
-| Real-time data handling | Yes | Yes |
-| Data transform update without resyncing | Yes | No |
-| Storing aggregations without the raw data (example: keeping a total DEx volume without keeping any temporally distributed data) | Yes, with partial loss of ability to update the transform | Yes |
-| Hosted service | Not yet | [Yes](https://docs.sqd.ai/cloud/) |
+|                                                                                                                                 | Pipes                                                     | Squid SDK                         |
+| ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- | --------------------------------- |
+| Mental model                                                                                                                    | Box of LEGO bricks                                        | A framework                       |
+| Peripheral services (DB clients, GraphQL etc)                                                                                   | "Bring your own", occasionally borrowing from Squid SDK   | Opinionated comprehensive support |
+| Real-time data handling                                                                                                         | Yes                                                       | Yes                               |
+| Data transform update without resyncing                                                                                         | Yes                                                       | No                                |
+| Storing aggregations without the raw data (example: keeping a total DEx volume without keeping any temporally distributed data) | Yes, with partial loss of ability to update the transform | Yes                               |
+| Hosted service                                                                                                                  | Not yet                                                   | [Yes](https://docs.sqd.ai/cloud/) |
