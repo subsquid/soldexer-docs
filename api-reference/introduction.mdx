@@ -2,6 +2,8 @@
 title: "Introduction"
 ---
 
+<Tip>Try our new Solana dataset starting from genesis! See [Base URL](#base-url)</Tip>
+
 Request the data you need by [POSTing to `/stream`](/api-reference/endpoint/post-stream) and you shall receive a stream of newline-separated JSON objects that package your data by block. For example
 ```bash
 curl https://portal.sqd.dev/datasets/solana-mainnet/stream \
@@ -93,10 +95,17 @@ Real life protocols and infra introduce a couple of complications that you need 
 
 ## Base URL
 
-For Solana use
+Stable Solana dataset is available at
 ```
 https://portal.sqd.dev/datasets/solana-mainnet
 ```
+Its earliest block is in February 2025.
+
+Feel free to try the new complete dataset (starting from genesis) available at
+```
+https://portal.sqd.dev/datasets/solana-beta
+```
+
 Other SVM networks TBA.
 
 ## Other endpoints
